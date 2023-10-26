@@ -8,7 +8,6 @@ import lombok.Setter;
 
 @Entity
 @NoArgsConstructor
-@AllArgsConstructor
 @Table(name = "conversations")
 public class Conversation {
 
@@ -20,4 +19,11 @@ public class Conversation {
     String modelSentence;
 
     String userSentence;
+
+    public Conversation(String userId, String modelSentence, String userSentence) {
+        this.userId = userId;
+        this.modelSentence = modelSentence;
+        this.userSentence = userSentence;
+    }
+
 }

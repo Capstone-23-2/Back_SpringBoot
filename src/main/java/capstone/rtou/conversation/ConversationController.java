@@ -25,7 +25,7 @@ public class ConversationController {
     }
 
     @GetMapping(value = "/start", produces = "audio/*")
-    public ResponseEntity startConversation(@RequestParam String userId, @RequestParam String characterName) throws IOException {
+    public ResponseEntity startConversation(@RequestParam String userId, @RequestParam String characterName) throws IOException, InterruptedException {
 
         byte[] startConversation = conversationService.startConversation(userId, characterName);
 
@@ -37,7 +37,7 @@ public class ConversationController {
     }
 
     @PostMapping(value = "/audio", produces = "audio/*")
-    public ResponseEntity receiveAudio(@RequestPart MultipartFile conversation) throws IOException {
+    public ResponseEntity receiveAudio(@RequestPart MultipartFile conversation) throws IOException, InterruptedException {
 
         byte[] responseAudio = conversationService.getNextAudio(conversation);
 
@@ -46,13 +46,5 @@ public class ConversationController {
         httpHeaders.setContentLength(responseAudio.length);
 
         return ResponseEntity.ok().headers(httpHeaders).body(responseAudio);
-    }
-
-    @GetMapping(value = "/end")
-    public ResponseEntity endConversation() {
-
-        conversationService.endConversation();
-
-        return ResponseEntity.ok().body(null);
     }
 }
