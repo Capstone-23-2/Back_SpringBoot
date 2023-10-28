@@ -1,11 +1,10 @@
 package capstone.rtou.conversation;
 
 import capstone.rtou.conversation.dto.ConversationRequestDto;
-import capstone.rtou.conversation.dto.ConversationResponseDto;
+import capstone.rtou.conversation.dto.ConversationResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,27 +22,19 @@ public class ConversationController {
         this.conversationService = conversationService;
     }
 
-    @GetMapping(value = "/start")
-    public ResponseEntity<ConversationResponseDto> startConversation(@Validated @RequestParam String userId, @RequestParam String characterName, BindingResult bindingResult) throws IOException {
-
-        if (bindingResult.hasErrors()) {
-            return ResponseEntity.badRequest().body(new ConversationResponseDto(null, bindingResult.getObjectName(), bindingResult.getFieldError().toString(), HttpStatus.BAD_REQUEST.value()));
-        }
+    @GetMapping("/start")
+    public ResponseEntity startConversation(@Validated @RequestParam String userId, @Validated @RequestParam String characterName) throws IOException {
 
         String startConversation = conversationService.startConversation(userId, characterName);
 
-        return ResponseEntity.ok().body(new ConversationResponseDto(startConversation, "대화 시작", HttpStatus.OK.value()));
+        return ResponseEntity.ok().body(new ConversationResponse(startConversation, "대화 시작", HttpStatus.OK.value()));
     }
 
-    @PostMapping(value = "/audio")
-    public ResponseEntity<ConversationResponseDto> receiveAudio(@Validated @RequestBody ConversationRequestDto conversationRequestDto, @Validated @RequestPart MultipartFile audioFile, BindingResult bindingResult) throws IOException, InterruptedException {
-
-        if (bindingResult.hasErrors()) {
-            return ResponseEntity.badRequest().body(new ConversationResponseDto(null, bindingResult.getObjectName(), bindingResult.getFieldError().toString(), HttpStatus.BAD_REQUEST.value()));
-        }
+    @PostMapping("/audio")
+    public ResponseEntity receiveAudio(@Validated @RequestBody ConversationRequestDto conversationRequestDto, @Validated @RequestPart MultipartFile audioFile ) throws IOException {
 
         String responseAudio = conversationService.getNextAudio(conversationRequestDto.getUserId(), audioFile);
 
-        return ResponseEntity.ok().body(new ConversationResponseDto(responseAudio, "사용자 음성 저장 완료", HttpStatus.OK.value()));
+        return ResponseEntity.ok().body(new ConversationResponse(responseAudio, "사용자 음성 저장 완료", HttpStatus.OK.value()));
     }
 }

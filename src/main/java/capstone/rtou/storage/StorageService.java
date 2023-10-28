@@ -8,6 +8,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Random;
 
 @Slf4j
@@ -18,9 +20,15 @@ public class StorageService {
     private final String bucketName = "rtou";
     private final Storage storage = StorageOptions.newBuilder().setProjectId(projectId).build().getService();
 
+    private final Acl acl = Acl.of(Acl.User.ofAllUsers(), Acl.Role.READER);
+
     public String uploadClientAudio(String userId, MultipartFile file) throws IOException {
         BlobId blobId = BlobId.of(bucketName, userId + "/client/" + file.getName());
-        BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType("audio/mpeg").build();
+        BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
+                .setContentType("audio/mpeg")
+                .setAcl(new ArrayList<>(Arrays.asList(acl)))
+                .build();
+
         Blob blob = storage.createFrom(blobInfo, file.getInputStream());
 
         log.info("Upload Url = {}", blob.getMediaLink());
@@ -32,7 +40,11 @@ public class StorageService {
         byte[] audioBytes = audioContents.toByteArray();
 
         BlobId blobId = BlobId.of(bucketName, userId + "/model/ModelVoice" + randomString() + ".mp3");
-        BlobInfo blobInfo = BlobInfo.newBuilder(blobId).setContentType("audio/mpeg").build();
+        BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
+                .setContentType("audio/mpeg")
+                .setAcl(new ArrayList<>(Arrays.asList(acl)))
+                .build();
+
         Blob blob = storage.createFrom(blobInfo, new ByteArrayInputStream(audioBytes));
 
         if (blob != null) {

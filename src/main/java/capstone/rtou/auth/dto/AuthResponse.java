@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class AuthResponseDto {
+public class AuthResponse {
     private int code;
     private String message;
     @Nullable

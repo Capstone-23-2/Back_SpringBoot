@@ -18,16 +18,16 @@ import java.util.List;
 public class ConversationService {
 
     private final ConversationRepository conversationRepository;
-    private final CharacterInfoRepository characterInfoRepository;
+//    private final CharacterInfoRepository characterInfoRepository;
     private final StorageService storageService;
     private static String characterName; // AR 캐릭터 이름
     private static String voiceName; // AR 캐릭터 음성
     private static double pitch; // AR 캐릭터 음성 높낮이
 
 
-    public ConversationService(ConversationRepository conversationRepository, CharacterInfoRepository characterInfoRepository, StorageService storageService) {
+    public ConversationService(ConversationRepository conversationRepository, StorageService storageService) {
         this.conversationRepository = conversationRepository;
-        this.characterInfoRepository = characterInfoRepository;
+//        this.characterInfoRepository = characterInfoRepository;
         this.storageService = storageService;
     }
 
@@ -41,7 +41,7 @@ public class ConversationService {
      */
     public String startConversation(String userId, String characterName) throws IOException {
 
-        settingVoice(characterName);
+//        settingVoice(characterName);
 
         String hello = "Hi. I'm "+ characterName + ". Nice to meet you!! What's your name?";
 
@@ -57,12 +57,12 @@ public class ConversationService {
      * 캐릭터 음성 설정
      * @param characterName
      */
-    private void settingVoice(String characterName) {
+    /*private void settingVoice(String characterName) {
         CharacterInfo characterInfo = characterInfoRepository.getReferenceById(characterName);
         this.characterName = characterName;
         this.voiceName = characterInfo.getVoice_name();
         this.pitch = characterInfo.getPitch();
-    }
+    }*/
 
     /**
      * 사용자로부터 음성 파일을 저장하고 다음 대화 내용 가져오기
@@ -148,7 +148,8 @@ public class ConversationService {
     }
 
     /**
-     * 모델로부터 받아온 문장을 음성 파일로 변환
+     * 모델로부터 받아온 text를 음성 파일로 변환
+     *
      * @param sentence
      * @return
      * @throws IOException
