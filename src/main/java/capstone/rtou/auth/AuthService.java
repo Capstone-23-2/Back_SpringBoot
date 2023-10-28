@@ -3,7 +3,6 @@ package capstone.rtou.auth;
 import capstone.rtou.auth.dto.AuthRequestDto;
 import capstone.rtou.domain.user.User;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +22,7 @@ public class AuthService {
     public void save(AuthRequestDto authRequestDto) throws IOException {
         User user = new User();
 
-        user.setUserId(authRequestDto.getId());
+        user.setUserId(authRequestDto.getUserId());
         authRepository.save(user);
 
         log.info("User Info={} 저장 완료", user);

@@ -1,9 +1,10 @@
 package capstone.rtou.auth.dto;
 
-import jakarta.annotation.Nullable;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import javax.annotation.Nullable;
 
 @Getter
 @AllArgsConstructor

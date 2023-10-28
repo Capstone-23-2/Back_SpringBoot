@@ -4,26 +4,19 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
+@AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "conversations")
 public class Conversation {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+    @Id
     String userId;
 
-    String modelSentence;
+    @Getter
+    String audioFileLink;
 
+    @Getter
     String userSentence;
-
-    public Conversation(String userId, String modelSentence, String userSentence) {
-        this.userId = userId;
-        this.modelSentence = modelSentence;
-        this.userSentence = userSentence;
-    }
-
 }

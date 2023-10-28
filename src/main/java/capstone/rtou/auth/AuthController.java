@@ -1,14 +1,10 @@
 package capstone.rtou.auth;
 
 import capstone.rtou.auth.dto.AuthResponseDto;
-import capstone.rtou.domain.user.User;
 import capstone.rtou.auth.dto.AuthRequestDto;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +17,6 @@ import java.io.IOException;
 public class AuthController {
     private final AuthService authService;
 
-    @Autowired
     public AuthController(AuthService authService) {
         this.authService = authService;
     }
