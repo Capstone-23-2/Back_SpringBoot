@@ -1,6 +1,7 @@
 package capstone.rtou.conversation;
 
-import capstone.rtou.domain.conversation.CharacterInfo;
+import capstone.rtou.conversation.model.ModelService;
+import capstone.rtou.conversation.repository.ConversationRepository;
 import capstone.rtou.domain.conversation.Conversation;
 import capstone.rtou.storage.StorageService;
 import com.google.cloud.speech.v1.*;
@@ -18,17 +19,19 @@ import java.util.List;
 public class ConversationService {
 
     private final ConversationRepository conversationRepository;
-//    private final CharacterInfoRepository characterInfoRepository;
+    //    private final CharacterInfoRepository characterInfoRepository;
+    private final ModelService modelService;
     private final StorageService storageService;
     private static String characterName; // AR 캐릭터 이름
     private static String voiceName; // AR 캐릭터 음성
     private static double pitch; // AR 캐릭터 음성 높낮이
 
 
-    public ConversationService(ConversationRepository conversationRepository, StorageService storageService) {
+    public ConversationService(ConversationRepository conversationRepository, StorageService storageService, ModelService modelService) {
         this.conversationRepository = conversationRepository;
 //        this.characterInfoRepository = characterInfoRepository;
         this.storageService = storageService;
+        this.modelService = modelService;
     }
 
     /**
@@ -94,8 +97,9 @@ public class ConversationService {
      */
     private String getFromModel(String userId, String sentence) throws IOException {
         // 모델 API와 연결.
+        String mlSentence = modelService.getSentence(sentence);
 
-        ByteString speech = TextToSpeech("");
+        ByteString speech = TextToSpeech(mlSentence);
 
         if (speech != null) {
             return storageService.uploadModelAudioAndSend(userId, speech);
@@ -175,9 +179,9 @@ public class ConversationService {
                     .build();
 
             AudioConfig audioConfig = AudioConfig.newBuilder()
-                    .setAudioEncoding(AudioEncoding.LINEAR16)
-                    .setSpeakingRate(0.7)  // 임의로 지정한 수 추후 변경
-                    .setPitch(17) // 임의로 지정한 수 -> 추후 캐릭터 테이블에서 데이터를 가져와 설정하는 방법으로 변경
+                    .setAudioEncoding(AudioEncoding.MP3)
+                    .setSpeakingRate(0.8)
+                    .setPitch(15) // 임의로 지정한 수 -> 추후 캐릭터 테이블에서 데이터를 가져와 설정하는 방법으로 변경
                     .build();
 
             SynthesizeSpeechResponse response = textToSpeechClient.synthesizeSpeech(input, voice, audioConfig);

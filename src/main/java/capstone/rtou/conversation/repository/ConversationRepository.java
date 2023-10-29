@@ -1,4 +1,4 @@
-package capstone.rtou.conversation;
+package capstone.rtou.conversation.repository;
 
 import capstone.rtou.domain.conversation.Conversation;
 import org.springframework.data.jpa.repository.JpaRepository;

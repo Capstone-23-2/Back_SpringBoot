@@ -8,6 +8,6 @@ import lombok.Getter;
 @Getter
 public class AuthRequestDto {
 
-    @NotBlank
+    @NotBlank(message = "사용자 아이디는 필수입니다.")
     private String userId;
 }

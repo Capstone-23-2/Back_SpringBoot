@@ -8,10 +8,10 @@ import lombok.Setter;
  */
 @Entity
 @Setter
-@Table(name = "users", uniqueConstraints = {@UniqueConstraint(columnNames = "userId")})
+@Table(name = "User", uniqueConstraints = {@UniqueConstraint(columnNames = "userId")})
 public class User {
 
     @Id
-    @Column(nullable = false, length = 15, unique = true)
+    @Column(nullable = false, unique = true)
     private String userId;
 }
