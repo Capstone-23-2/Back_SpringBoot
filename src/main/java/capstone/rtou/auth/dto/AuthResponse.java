@@ -12,6 +12,4 @@ import javax.annotation.Nullable;
 public class AuthResponse {
     private int code;
     private String message;
-    @Nullable
-    private String error;
 }

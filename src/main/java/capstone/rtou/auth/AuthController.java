@@ -21,11 +21,11 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity registerUser(@RequestBody @Validated AuthRequestDto authRequestDto) throws IOException {
+    public ResponseEntity<AuthResponse> registerUser(@RequestBody @Validated AuthRequestDto authRequestDto) throws IOException {
         log.info("회원 등록 시작");
 
         authService.save(authRequestDto);
 
-        return ResponseEntity.ok().body(new AuthResponse(HttpStatus.OK.value(),"회원 정보가 등록되었습니다.", null));
+        return ResponseEntity.ok().body(new AuthResponse(HttpStatus.OK.value(),"회원 정보가 등록되었습니다."));
     }
 }

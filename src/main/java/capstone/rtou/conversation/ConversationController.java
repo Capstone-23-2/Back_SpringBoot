@@ -2,7 +2,6 @@ package capstone.rtou.conversation;
 
 import capstone.rtou.conversation.dto.ConversationRequestDto;
 import capstone.rtou.conversation.dto.ConversationResponse;
-import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +23,7 @@ public class ConversationController {
     }
 
     @GetMapping("/start")
-    public ResponseEntity startConversation(@Validated @NotNull(message = "사용자 아이디는 필수입니다.") @RequestParam String userId, @Validated @NotNull(message = "캐릭터 이름은 필수입니다.") @RequestParam String characterName) throws IOException {
+    public ResponseEntity<ConversationResponse> startConversation(@Validated @RequestParam String userId, @Validated @RequestParam String characterName) throws IOException {
 
         String startConversation = conversationService.startConversation(userId, characterName);
 
@@ -32,7 +31,7 @@ public class ConversationController {
     }
 
     @PostMapping("/audio")
-    public ResponseEntity receiveAudio(@Validated @RequestBody ConversationRequestDto conversationRequestDto, @Validated @NotNull(message = "파일은 필수입니다.") @RequestPart MultipartFile audioFile ) throws IOException {
+    public ResponseEntity<ConversationResponse> receiveAudio(@Validated @RequestBody ConversationRequestDto conversationRequestDto, @Validated @RequestPart MultipartFile audioFile ) throws IOException {
 
         String responseAudio = conversationService.getNextAudio(conversationRequestDto.getUserId(), audioFile);
 
