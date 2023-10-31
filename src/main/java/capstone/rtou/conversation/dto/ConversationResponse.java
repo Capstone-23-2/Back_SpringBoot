@@ -7,10 +7,9 @@ import lombok.Getter;
 @Getter
 public class ConversationResponse {
 
+    int status;
     String url;
     String message;
-    String error;
-    int status;
 
     public ConversationResponse(String url, String message, int status) {
         this.url = url;

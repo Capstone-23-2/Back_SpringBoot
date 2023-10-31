@@ -23,7 +23,7 @@ public class ConversationController {
     }
 
     @GetMapping("/start")
-    public ResponseEntity startConversation(@Validated @RequestParam String userId, @Validated @RequestParam String characterName) throws IOException {
+    public ResponseEntity<ConversationResponse> startConversation(@Validated @RequestParam String userId, @Validated @RequestParam String characterName) throws IOException {
 
         String startConversation = conversationService.startConversation(userId, characterName);
 
@@ -31,7 +31,7 @@ public class ConversationController {
     }
 
     @PostMapping("/audio")
-    public ResponseEntity receiveAudio(@Validated @RequestBody ConversationRequestDto conversationRequestDto, @Validated @RequestPart MultipartFile audioFile ) throws IOException {
+    public ResponseEntity<ConversationResponse> receiveAudio(@Validated @RequestBody ConversationRequestDto conversationRequestDto, @Validated @RequestPart MultipartFile audioFile ) throws IOException {
 
         String responseAudio = conversationService.getNextAudio(conversationRequestDto.getUserId(), audioFile);
 

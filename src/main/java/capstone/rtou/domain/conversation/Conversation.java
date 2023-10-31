@@ -11,12 +11,12 @@ import lombok.NoArgsConstructor;
 @Table(name = "conversations")
 public class Conversation {
 
-    @Id
+    @Id @Column(nullable = false)
     String userId;
 
-    @Getter
+    @Getter @Column(nullable = false)
     String audioFileLink;
 
-    @Getter
+    @Getter @Column(nullable = false)
     String userSentence;
 }
