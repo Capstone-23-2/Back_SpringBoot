@@ -30,10 +30,10 @@ public class ConversationController {
         return ResponseEntity.ok().body(new ConversationResponse(startConversation, "대화 시작", HttpStatus.OK.value()));
     }
 
-    @PostMapping("/audio")
-    public ResponseEntity<ConversationResponse> receiveAudio(@Validated @RequestBody ConversationRequestDto conversationRequestDto, @Validated @RequestPart MultipartFile audioFile ) throws IOException {
+    @PostMapping("/audio/{userId}")
+    public ResponseEntity<ConversationResponse> receiveAudio(@PathVariable String userId, @Validated @RequestPart MultipartFile audioFile ) throws IOException {
 
-        String responseAudio = conversationService.getNextAudio(conversationRequestDto.getUserId(), audioFile);
+        String responseAudio = conversationService.getNextAudio(userId, audioFile);
 
         return ResponseEntity.ok().body(new ConversationResponse(responseAudio, "사용자 음성 저장 완료", HttpStatus.OK.value()));
     }

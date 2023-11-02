@@ -9,11 +9,14 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @NoArgsConstructor
-@AllArgsConstructor
 @Table(name = "Conversations")
 public class Conversation {
 
-    @Id @Column(nullable = false)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long id;
+
+    @Column(nullable = false)
     String userId;
 
     @Column(nullable = false)
@@ -21,4 +24,10 @@ public class Conversation {
 
     @Column(nullable = false)
     String userSentence;
+
+    public Conversation(String userId, String audioFileLink, String userSentence) {
+        this.userId = userId;
+        this.audioFileLink = audioFileLink;
+        this.userSentence = userSentence;
+    }
 }

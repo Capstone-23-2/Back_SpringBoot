@@ -1,23 +1,26 @@
 package capstone.rtou.domain.attention;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDate;
 
 @Entity
 @Table(name = "Attention")
-@AllArgsConstructor
 @NoArgsConstructor
 public class Attention {
 
-    @Id @Column
-    String userId;
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    Long id;
 
     @Column
-    LocalDate date;
+    String userId;
+
+    @Column @Getter
+    String attendDate;
+
+    public Attention(String userId, String attendDate) {
+        this.userId = userId;
+        this.attendDate = attendDate;
+    }
 }

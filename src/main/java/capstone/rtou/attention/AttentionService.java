@@ -1,9 +1,13 @@
 package capstone.rtou.attention;
 
 import capstone.rtou.attention.dto.AttentionRequestDto;
+import capstone.rtou.attention.dto.AttentionResponse;
 import capstone.rtou.domain.attention.Attention;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -15,12 +19,28 @@ public class AttentionService {
         this.attentionRepository = attentionRepository;
     }
 
-    String attention(AttentionRequestDto attentionRequest) {
+    AttentionResponse attention(AttentionRequestDto attentionRequest) {
+        if (attentionRepository.existsAttentionByUserIdAndAttendDate(attentionRequest.getUserId(), attentionRequest.getDate())) {
+            return new AttentionResponse(false,"오늘은 이미 출석했습니다");
+        } else {
+            Attention attention = new Attention(attentionRequest.getUserId(), attentionRequest.getDate());
+            attentionRepository.save(attention);
+            return new AttentionResponse(true, "출석 완료");
+        }
+    }
 
-        Attention attention = new Attention(attentionRequest.getUserId(), attentionRequest.getDate());
+    public AttentionResponse findAttentionById(String userId) {
+        List<Attention> list = attentionRepository.findAllByUserId(userId);
 
-        attentionRepository.save(attention);
+        if (list.isEmpty()) {
+            return new AttentionResponse(false, "출석 기록이 존재하지 않습니다");
+        } else {
+            List<String> dates = new ArrayList<>();
 
-        return "";
+            for (Attention i : list) {
+                dates.add(i.getAttendDate());
+            }
+            return new AttentionResponse(true, "전체 출석 기록", (ArrayList<String>) dates);
+        }
     }
 }

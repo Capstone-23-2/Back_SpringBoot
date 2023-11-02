@@ -22,8 +22,8 @@ public class StorageService {
 
     private final Acl acl = Acl.of(Acl.User.ofAllUsers(), Acl.Role.READER);
 
-    public String uploadClientAudio(String userId, MultipartFile file) throws IOException {
-        BlobId blobId = BlobId.of(bucketName, userId + "/client/" + file.getName());
+    public String uploadClientAudio(String userId, MultipartFile file, String sentence) throws IOException {
+        BlobId blobId = BlobId.of(bucketName, userId + "/user/" + sentence + ".mp3");
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
                 .setContentType("audio/mpeg")
                 .setAcl(new ArrayList<>(Arrays.asList(acl)))

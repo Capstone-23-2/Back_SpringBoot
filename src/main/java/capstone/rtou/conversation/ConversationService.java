@@ -76,11 +76,11 @@ public class ConversationService {
      */
     public String getNextAudio(String userId, MultipartFile audioFile) throws IOException {
 
-        // 사용자 음성 파일 업로드
-        String clientAudioLink = storageService.uploadClientAudio(userId, audioFile);
-
         String transcribe = SpeechToText(audioFile); // 사용자 음성 파일 텍스트로 변환
         String mlVoiceUrl = getFromModel(userId, transcribe); // 위에서 얻은 사용자의 문장으로부터 모델에게서 다음 문장 가져오기
+
+        // 사용자 음성 저장.
+        String clientAudioLink = storageService.uploadClientAudio(userId, audioFile, transcribe);
 
         Conversation conversation = new Conversation(userId, clientAudioLink, transcribe);
         conversationRepository.save(conversation);

@@ -12,7 +12,6 @@ public class AttentionRequestDto {
 
     @NotBlank
     String userId;
-
     @NotBlank
-    LocalDate date;
+    String date;
 }

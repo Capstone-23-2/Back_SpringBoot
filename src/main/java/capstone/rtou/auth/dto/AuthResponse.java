@@ -10,6 +10,13 @@ import javax.annotation.Nullable;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AuthResponse {
-    private int code;
+
+    private boolean status;
     private String message;
+    private String error;
+
+    public AuthResponse(boolean status, String message) {
+        this.status = status;
+        this.message = message;
+    }
 }

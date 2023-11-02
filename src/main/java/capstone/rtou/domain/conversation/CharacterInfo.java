@@ -8,12 +8,13 @@ import lombok.Getter;
 
 @Entity
 @Table(name = "CharacterInfo")
+@Getter
 public class CharacterInfo {
 
     @Id @Column
     String name; // 캐릭터 이름
     @Column
-    String voice_name; // 음성명
+    String voiceName; // 음성명
     @Column
     double pitch; // 음성 높낮이
 }

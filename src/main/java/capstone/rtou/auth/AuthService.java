@@ -1,6 +1,7 @@
 package capstone.rtou.auth;
 
 import capstone.rtou.auth.dto.AuthRequestDto;
+import capstone.rtou.auth.dto.AuthResponse;
 import capstone.rtou.domain.user.User;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,12 +20,17 @@ public class AuthService {
     }
 
     @Transactional
-    public void save(AuthRequestDto authRequestDto) throws IOException {
-        User user = new User();
+    public AuthResponse save(AuthRequestDto authRequestDto) throws IOException {
 
-        user.setUserId(authRequestDto.getUserId());
-        authRepository.save(user);
+        if (authRepository.existsById(authRequestDto.getUserId())) {
+            log.info("Exists User={}", authRequestDto.getUserId());
+            return new AuthResponse(false, "이미 존재하는 아이디입니다.");
+        } else {
 
-        log.info("User Info={} 저장 완료", user);
+            User user = new User(authRequestDto.getUserId(), authRequestDto.getSso());
+            authRepository.save(user);
+            log.info("User Info={} 저장 완료", user);
+            return new AuthResponse(true, "회원 정보가 저장되었습니다.");
+        }
     }
 }

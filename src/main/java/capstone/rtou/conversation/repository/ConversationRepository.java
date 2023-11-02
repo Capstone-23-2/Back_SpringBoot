@@ -9,4 +9,5 @@ import java.util.Optional;
 @Repository
 public interface ConversationRepository extends JpaRepository<Conversation, Long> {
 
+    Conversation findByUserIdAndUserSentence(String userId, String sentence);
 }

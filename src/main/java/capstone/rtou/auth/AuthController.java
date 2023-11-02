@@ -24,8 +24,8 @@ public class AuthController {
     public ResponseEntity<AuthResponse> registerUser(@RequestBody @Validated AuthRequestDto authRequestDto) throws IOException {
         log.info("회원 등록 시작");
 
-        authService.save(authRequestDto);
+        AuthResponse authResponse = authService.save(authRequestDto);
 
-        return ResponseEntity.ok().body(new AuthResponse(HttpStatus.OK.value(),"회원 정보가 등록되었습니다."));
+        return ResponseEntity.ok().body(authResponse);
     }
 }
