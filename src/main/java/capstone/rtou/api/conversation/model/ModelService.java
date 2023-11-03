@@ -19,10 +19,8 @@ public class ModelService {
         String apiUrl = "http://54.180.104.9:8000/conversation"; // API 엔드포인트 URL
 
         // API 호출
-        ResponseEntity<ModelResponse> response = restTemplate.postForEntity(apiUrl, new ModelRequest(1, sentence), ModelResponse.class);
-        ModelResponse body = response.getBody();
-
-        return body.getText();
+        ModelResponse modelResponse = restTemplate.postForObject(apiUrl, new ModelRequest(1, sentence), ModelResponse.class);
+        return modelResponse.getText();
     }
 
 }

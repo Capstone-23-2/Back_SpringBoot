@@ -70,7 +70,7 @@ public class ConversationService {
 
         String hello = "Hi. I'm "+ characterName + ". Nice to meet you!! What's your name?";
 
-        //modelService.getSentence("<start>");
+        modelService.getSentence("<start>");
         if (!characterInfoRepository.existsById(characterName)) {
             return new ConversationResponse(false, "존재하지 않는 캐릭터");
         }
@@ -210,9 +210,9 @@ public class ConversationService {
                     .build();
 
             AudioConfig audioConfig = AudioConfig.newBuilder()
-                    .setAudioEncoding(AudioEncoding.MP3)
+                    .setAudioEncoding(AudioEncoding.LINEAR16)
                     .setSpeakingRate(0.8)
-                    .setPitch(pitch) // 임의로 지정한 수 -> 추후 캐릭터 테이블에서 데이터를 가져와 설정하는 방법으로 변경
+                    .setPitch(pitch)
                     .build();
 
             SynthesizeSpeechResponse response = textToSpeechClient.synthesizeSpeech(input, voice, audioConfig);
