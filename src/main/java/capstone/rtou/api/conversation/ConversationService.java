@@ -210,7 +210,7 @@ public class ConversationService {
                     .build();
 
             AudioConfig audioConfig = AudioConfig.newBuilder()
-                    .setAudioEncoding(AudioEncoding.MP3)
+                    .setAudioEncoding(AudioEncoding.LINEAR16)
                     .setSpeakingRate(0.8)
                     .setPitch(pitch) // 임의로 지정한 수 -> 추후 캐릭터 테이블에서 데이터를 가져와 설정하는 방법으로 변경
                     .build();

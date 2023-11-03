@@ -12,6 +12,7 @@ public class ConversationResponse {
     boolean status;
     @JsonInclude(value = JsonInclude.Include.NON_NULL)
     String message;
+    @JsonInclude(value = JsonInclude.Include.NON_NULL)
     String url;
     @JsonInclude(value = JsonInclude.Include.NON_NULL)
     String conversationId;

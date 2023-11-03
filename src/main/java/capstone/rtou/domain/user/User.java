@@ -5,9 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/**
- * User DB
- */
 @Entity
 @Table(name = "User", uniqueConstraints = {@UniqueConstraint(columnNames = "userId")})
 @AllArgsConstructor
