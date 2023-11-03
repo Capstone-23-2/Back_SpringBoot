@@ -111,7 +111,7 @@ public class ConversationService {
             Conversation conversation = new Conversation(conversationId, userId, clientAudioLink, transcribe);
             conversationRepository.save(conversation);
 
-            return new ConversationResponse(true, mlUrl, "사용자 음성 저장 및 음성 생성 완료");
+            return new ConversationResponse(true, "사용자 음성 저장 및 음성 생성 완료", mlUrl);
         } else {
             return new ConversationResponse(false, "음성 생성 X");
         }

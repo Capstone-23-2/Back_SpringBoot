@@ -20,4 +20,10 @@ public class ConversationResponse {
         this.status = status;
         this.message = message;
     }
+
+    public ConversationResponse(boolean status, String message, String url) {
+        this.status = status;
+        this.message = message;
+        this.url = url;
+    }
 }
