@@ -13,10 +13,11 @@ public class Attention {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @Column
+    @Column(name = "userid", nullable = false)
     String userId;
 
-    @Column @Getter
+    @Column(name = "attenddate", nullable = false)
+    @Getter
     String attendDate;
 
     public Attention(String userId, String attendDate) {

@@ -16,16 +16,20 @@ public class Conversation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
-    @Column(nullable = false)
+    @Column(name = "conversationid", nullable = false)
+    String conversationId;
+
+    @Column(name = "userid",nullable = false)
     String userId;
 
-    @Column(nullable = false)
+    @Column(name = "audiofilelink", nullable = false)
     String audioFileLink;
 
-    @Column(nullable = false)
+    @Column(name = "usersentence", nullable = false)
     String userSentence;
 
-    public Conversation(String userId, String audioFileLink, String userSentence) {
+    public Conversation(String conversationId, String userId, String audioFileLink, String userSentence) {
+        this.conversationId = conversationId;
         this.userId = userId;
         this.audioFileLink = audioFileLink;
         this.userSentence = userSentence;

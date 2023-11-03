@@ -39,9 +39,9 @@ public class StorageService {
     public String uploadModelAudioAndSend(String userId, ByteString audioContents) throws IOException {
         byte[] audioBytes = audioContents.toByteArray();
 
-        BlobId blobId = BlobId.of(bucketName, userId + "/model/ModelVoice" + randomString() + ".mp3");
+        BlobId blobId = BlobId.of(bucketName, userId + "/model/ModelVoice" + randomString() + ".wav");
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
-                .setContentType("audio/mpeg")
+                .setContentType("audio/wav")
                 .setAcl(new ArrayList<>(Arrays.asList(acl)))
                 .build();
 
