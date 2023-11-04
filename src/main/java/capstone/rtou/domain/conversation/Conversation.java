@@ -6,10 +6,9 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Entity
 @Getter
 @NoArgsConstructor
-@Table(name = "Conversations", indexes = @Index(name = "conversationUserIdIndex", columnList = "userid"))
+@Table(name = "conversations", indexes = @Index(name = "idx_conversation", columnList = "userid"))
 public class Conversation {
 
     @Id

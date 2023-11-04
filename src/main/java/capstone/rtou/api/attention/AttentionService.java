@@ -38,7 +38,7 @@ public class AttentionService {
             List<String> dates = new ArrayList<>();
 
             for (Attention i : list) {
-                dates.add(i.getAttendDate());
+                dates.add(i.getDate());
             }
             return new AttentionResponse(true, "전체 출석 기록", (ArrayList<String>) dates);
         }

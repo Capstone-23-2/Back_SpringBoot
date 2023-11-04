@@ -1,14 +1,12 @@
 package capstone.rtou.domain.estimation;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@Entity
 @NoArgsConstructor
-@Table(name = "Errorwords", indexes = @Index(name = "errorWordsUserIdIndex", columnList = "userid"))
+@Table(name = "errorowords", indexes = @Index(name = "idx_errors", columnList = "userid, sentence"))
 public class ErrorWords {
 
     @Id

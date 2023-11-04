@@ -6,8 +6,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
-@Entity
-@Table(name = "Estimation", indexes = @Index(name = "estimationUserIdIndex", columnList = "userid"))
+@Table(name = "estimations", indexes = @Index(name = "idx_estimation", columnList = "userid"))
 @NoArgsConstructor
 public class EstimationResult {
 
