@@ -6,7 +6,6 @@ import lombok.Getter;
 
 
 @Getter
-@AllArgsConstructor
 public class ConversationResponse {
 
     boolean status;
@@ -14,8 +13,6 @@ public class ConversationResponse {
     String message;
     @JsonInclude(value = JsonInclude.Include.NON_NULL)
     String url;
-    @JsonInclude(value = JsonInclude.Include.NON_NULL)
-    String conversationId;
 
     public ConversationResponse(boolean status, String message) {
         this.status = status;

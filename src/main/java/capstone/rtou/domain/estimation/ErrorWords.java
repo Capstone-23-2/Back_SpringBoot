@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Entity
 @NoArgsConstructor
-@Table(name = "Errorwords")
+@Table(name = "Errorwords", indexes = @Index(name = "errorWordsUserIdIndex", columnList = "userid"))
 public class ErrorWords {
 
     @Id
@@ -17,8 +17,6 @@ public class ErrorWords {
     Long id;
     @Column(name = "userid", nullable = false)
     String userId;
-    @Column(name = "conversationid", nullable = false)
-    String conversationId;
     @Column(nullable = false)
     String sentence;
     @Column(name = "errorword", nullable = false)
@@ -26,9 +24,8 @@ public class ErrorWords {
     @Column(name = "errortype", nullable = false)
     String errorType;
 
-    public ErrorWords(String userId, String conversationId, String sentence, String errorWord, String errorType) {
+    public ErrorWords(String userId, String sentence, String errorWord, String errorType) {
         this.userId = userId;
-        this.conversationId = conversationId;
         this.sentence = sentence;
         this.errorWord = errorWord;
         this.errorType = errorType;

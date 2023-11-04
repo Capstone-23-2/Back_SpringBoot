@@ -8,6 +8,7 @@ import capstone.rtou.api.estimation.dto.EstimationResponse;
 import capstone.rtou.domain.estimation.ErrorWords;
 import capstone.rtou.domain.estimation.EstimationResult;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -29,7 +30,7 @@ public class EstimationService {
 
     public EstimationResponse getEstimation(String userId, String conversationId) {
 
-        List<EstimationResult> results = estimationRepository.findAllByUserIdAndConversationId(userId, conversationId);
+        List<EstimationResult> results = estimationRepository.findAllByUserId(userId);
 
         if (!results.isEmpty()) {
             List<Result> estimationResults = new ArrayList<>();
@@ -52,7 +53,7 @@ public class EstimationService {
 
             List<EstimationResult> resultList = estimationRepository.findByMultipleScores(avgAccuracy, avgFluency, avgCompleteness, avgPron);
             for (EstimationResult i : resultList) {
-                List<ErrorWords> words = errorWordRepository.findAllByUserIdAndConversationIdAndSentence(userId, conversationId, i.getSentence());
+                List<ErrorWords> words = errorWordRepository.findAllByUserIdAndSentence(userId, i.getSentence());
                 List<ErrorWord> errorWords = new ArrayList<>();
                 for (ErrorWords error : words) {
                     errorWords.add(new ErrorWord(error.getErrorWord(), error.getErrorType()));
@@ -60,9 +61,17 @@ public class EstimationService {
                 estimationResults.add(new Result(i.getSentence(), errorWords));
             }
 
+            deleteEstimationByUserId(userId);
+
             return new EstimationResponse(true, userId + "의 평가 결과", estimationResults, avgAccuracy, avgFluency, avgCompleteness, avgPron);
         } else {
             return new EstimationResponse(false, userId + "의 평가 결과X");
         }
+    }
+
+    @Async
+    void deleteEstimationByUserId(String userId) {
+        estimationRepository.deleteAllByUserId(userId);
+        errorWordRepository.deleteAllByUserId(userId);
     }
 }

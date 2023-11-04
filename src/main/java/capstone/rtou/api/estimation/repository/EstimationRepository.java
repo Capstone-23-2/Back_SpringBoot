@@ -11,7 +11,9 @@ import java.util.List;
 @Repository
 public interface EstimationRepository extends JpaRepository<EstimationResult, Long> {
 
-    List<EstimationResult> findAllByUserIdAndConversationId(String userId, String conversationId);
+    List<EstimationResult> findAllByUserId(String userId);
+
+    void deleteAllByUserId(String userId);
 
     @Query("SELECT e FROM EstimationResult e " +
             "WHERE e.AccuracyScore <= :avgAccuracyScore " +

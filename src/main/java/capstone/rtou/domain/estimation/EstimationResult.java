@@ -7,9 +7,8 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @Entity
-@Table(name = "Estimation")
+@Table(name = "Estimation", indexes = @Index(name = "estimationUserIdIndex", columnList = "userid"))
 @NoArgsConstructor
-@AllArgsConstructor
 public class EstimationResult {
 
     @Id
@@ -17,8 +16,6 @@ public class EstimationResult {
     Long id;
     @Column(name = "userid", nullable = false)
     String userId;
-    @Column(name = "conversationid", nullable = false)
-    String conversationId;
     @Column(nullable = false)
     String sentence;
     @Column(name = "accuracyscore", nullable = false)
@@ -30,9 +27,8 @@ public class EstimationResult {
     @Column(name = "completenessscore",nullable = false)
     Double CompletenessScore;
 
-    public EstimationResult(String userId, String conversationId, String sentence, Double accuracyScore, Double pronunciationScore, Double fluencyScore, Double completenessScore) {
+    public EstimationResult(String userId, String sentence, Double accuracyScore, Double pronunciationScore, Double fluencyScore, Double completenessScore) {
         this.userId = userId;
-        this.conversationId = conversationId;
         this.sentence = sentence;
         AccuracyScore = accuracyScore;
         PronunciationScore = pronunciationScore;

@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -23,14 +22,12 @@ public class UserController {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-
     @Autowired
     public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-    @JsonFormat
     @GetMapping("/duplicate")
     public ResponseEntity<AuthResponse> existId(@RequestParam String id) {
         log.info("아이디 중복 조회");
@@ -41,8 +38,6 @@ public class UserController {
         return ResponseEntity.ok().body(new AuthResponse(HttpStatus.OK.value(), "중복된 아이디가 없습니다.", null));
     }
 
-    @Transactional
-    @JsonFormat
     @PostMapping("/signup")
     public ResponseEntity<AuthResponse> registerUser(@RequestBody @Validated UserRequestDto userRequestDto, BindingResult bindingResult) throws IOException {
         log.info("회원 등록 시작");

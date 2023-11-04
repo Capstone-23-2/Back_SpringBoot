@@ -31,10 +31,10 @@ public class ConversationController {
         return ResponseEntity.ok().body(conversationResponse);
     }
 
-    @PostMapping("/audio/{userId}/{conversationId}")
-    public ResponseEntity<ConversationResponse> receiveAudio(@PathVariable(name = "userId") String userId, @PathVariable(name = "conversationId") String conversationId, @Validated @RequestPart MultipartFile audioFile) throws IOException, ExecutionException, InterruptedException, TimeoutException {
+    @PostMapping("/audio/{userId}")
+    public ResponseEntity<ConversationResponse> receiveAudio(@PathVariable(name = "userId") String userId, @Validated @RequestPart MultipartFile audioFile) throws IOException, ExecutionException, InterruptedException, TimeoutException {
 
-         ConversationResponse conversationResponse = conversationService.getNextAudio(conversationId, userId, audioFile);
+         ConversationResponse conversationResponse = conversationService.getNextAudio(userId, audioFile);
 
         return ResponseEntity.ok().body(conversationResponse);
     }

@@ -27,10 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -48,6 +45,7 @@ public class ConversationService {
     private final ModelService modelService;
     private final StorageService storageService;
     private final String key = "673540caf6af45cb94482557d5d1a726";
+
     public ConversationService(ConversationRepository conversationRepository, CharacterInfoRepository characterInfoRepository, ConversationCharacterRepository conversationCharacterRepository, EstimationRepository estimationRepository, ErrorWordRepository errorWordRepository, StorageService storageService, ModelService modelService) {
         this.conversationRepository = conversationRepository;
         this.characterInfoRepository = characterInfoRepository;
@@ -75,14 +73,16 @@ public class ConversationService {
             return new ConversationResponse(false, "존재하지 않는 캐릭터");
         }
 
-        String conversationId = randomString();
-        conversationCharacterRepository.save(new ConversationCharacter(conversationId, characterName));
-
+        if (conversationCharacterRepository.existsById(userId)) {
+            conversationCharacterRepository.updateByUserId(userId, characterName);
+        } else {
+            conversationCharacterRepository.save(new ConversationCharacter(userId,characterName));
+        }
         CharacterInfo characterInfo = characterInfoRepository.findByName(characterName);
         ByteString speech = TextToSpeech(hello, characterInfo.getVoiceName(), characterInfo.getPitch());
         if (speech != null) {
             String audioLink = storageService.uploadModelAudioAndSend(userId, speech);
-            return new ConversationResponse(true, "음성 생성 완료", audioLink, conversationId);
+            return new ConversationResponse(true, "음성 생성 완료", audioLink);
         } else {
             return new ConversationResponse(false, "음성이 생성X");
         }
@@ -90,7 +90,6 @@ public class ConversationService {
 
     /**
      * 사용자로부터 받은 음성을 대화 아이디와 같이 저장하고 다음 대화를 전달.
-     * @param conversationId
      * @param userId
      * @param audioFile
      * @return
@@ -99,16 +98,16 @@ public class ConversationService {
      * @throws InterruptedException
      * @throws TimeoutException
      */
-    public ConversationResponse getNextAudio(String conversationId, String userId, MultipartFile audioFile) throws IOException, ExecutionException, InterruptedException, TimeoutException {
+    public ConversationResponse getNextAudio(String userId, MultipartFile audioFile) throws IOException, ExecutionException, InterruptedException, TimeoutException {
 
         String transcribe = SpeechToText(audioFile); // 사용자 음성 파일 텍스트로 변환
-        String mlUrl = getFromModel(conversationId, userId, transcribe); // 위에서 얻은 사용자의 문장으로부터 모델에게서 다음 문장 가져오기
+        String mlUrl = getFromModel(userId, transcribe); // 위에서 얻은 사용자의 문장으로부터 모델에게서 다음 문장 가져오기
 
         if (mlUrl != null) {
             // 사용자 음성 저장.
             String clientAudioLink = storageService.uploadClientAudio(userId, audioFile, transcribe);
-            pronunciationAssessment(conversationId, userId, transcribe, clientAudioLink);
-            Conversation conversation = new Conversation(conversationId, userId, clientAudioLink, transcribe);
+            pronunciationAssessment(userId, transcribe, clientAudioLink);
+            Conversation conversation = new Conversation(userId, clientAudioLink, transcribe);
             conversationRepository.save(conversation);
 
             return new ConversationResponse(true, "사용자 음성 저장 및 음성 생성 완료", mlUrl);
@@ -124,11 +123,11 @@ public class ConversationService {
      * @return
      * @throws IOException
      */
-    private String getFromModel(String conversationId, String userId, String sentence) throws IOException {
+    private String getFromModel(String userId, String sentence) throws IOException {
         // 모델 API와 연결.
         String mlSentence = modelService.getSentence(sentence);
-        ConversationCharacter character = conversationCharacterRepository.findByConversationId(conversationId);
-        CharacterInfo characterInfo = characterInfoRepository.getReferenceById(character.getCharacterName());
+        String character = conversationCharacterRepository.findByUserId(userId);
+        CharacterInfo characterInfo = characterInfoRepository.getReferenceById(character);
         ByteString speech = TextToSpeech(mlSentence, characterInfo.getVoiceName(), characterInfo.getPitch());
 
         if (speech != null) {
@@ -230,7 +229,6 @@ public class ConversationService {
     /**
      * 사용자 아이디와 대화 아이디가 일치하는 문장들을 가져와 음성 평가 결과 반환.
      * 비동기식으로 처리.
-     * @param conversationId
      * @param userId
      * @param sentence
      * @param audioLink
@@ -240,7 +238,7 @@ public class ConversationService {
      * @throws JsonProcessingException
      */
     @Async
-    public void pronunciationAssessment(String conversationId, String userId, String sentence, String audioLink) throws ExecutionException, InterruptedException, TimeoutException, JsonProcessingException {
+    public void pronunciationAssessment(String userId, String sentence, String audioLink) throws ExecutionException, InterruptedException, TimeoutException, JsonProcessingException {
 
         SpeechConfig speechConfig = SpeechConfig.fromSubscription(key, "eastus");
         String lang = "en-US";
@@ -275,7 +273,7 @@ public class ConversationService {
         double pron = pronunciation.path("PronScore").asDouble();
 
         EstimationResult result = new EstimationResult(
-                userId, conversationId, displayText,
+                userId, displayText,
                 accuracy, fluency, completeness, pron);
         estimationRepository.save(result);
 
@@ -285,7 +283,7 @@ public class ConversationService {
             String errorWord = pronunciationAssessment.path("Word").asText();
             String errorType = pronunciationAssessment.path("ErrorType").asText();
             if (errorType == "None") {
-                ErrorWords errorWords = new ErrorWords(userId, conversationId, displayText, errorWord, errorType);
+                ErrorWords errorWords = new ErrorWords(userId, displayText, errorWord, errorType);
                 errorWordRepository.save(errorWords);
             }
         }
@@ -294,20 +292,5 @@ public class ConversationService {
         speechConfig.close();
         pronunciationConfig.close();
         speechRecognitionResult.close();
-    }
-
-    private String randomString() {
-        int leftLimit = 48; // numeral '0'
-        int rightLimit = 122; // letter 'z'
-        int targetStringLength = 10;
-        Random random = new Random();
-
-        String generatedString = random.ints(leftLimit,rightLimit + 1)
-                .filter(i -> (i <= 57 || i >= 65) && (i <= 90 || i >= 97))
-                .limit(targetStringLength)
-                .collect(StringBuilder::new, StringBuilder::appendCodePoint, StringBuilder::append)
-                .toString();
-
-        return generatedString;
     }
 }

@@ -13,8 +13,8 @@ import lombok.NoArgsConstructor;
 public class ConversationCharacter {
 
     @Id
-    @Column(name = "conversationid")
-    String conversationId;
+    @Column(name = "userid")
+    String userId;
 
     @Column(name = "charactername", nullable = false)
     String characterName;

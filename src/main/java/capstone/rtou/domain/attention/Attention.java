@@ -6,11 +6,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "Attention")
+@Table(name = "Attention", indexes = @Index(name = "userIdIndex", columnList = "userid"))
 @NoArgsConstructor
 public class Attention {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
     @Column(name = "userid", nullable = false)
