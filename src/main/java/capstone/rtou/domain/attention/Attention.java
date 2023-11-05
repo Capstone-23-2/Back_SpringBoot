@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-
+@Entity
 @Table(name = "attention", indexes = @Index(name = "idx_user", columnList = "userid"))
 @NoArgsConstructor
 public class Attention {
@@ -14,7 +14,7 @@ public class Attention {
     Long id;
     @Column(name = "userid", nullable = false)
     String userId;
-    @Column(name = "attenddate", nullable = false)
+    @Column(name = "date", nullable = false, columnDefinition = "varchar(8)")
     @Getter
     String date;
 

@@ -23,9 +23,9 @@ public class StorageService {
     private final Acl acl = Acl.of(Acl.User.ofAllUsers(), Acl.Role.READER);
 
     public String uploadClientAudio(String userId, MultipartFile file, String sentence) throws IOException {
-        BlobId blobId = BlobId.of(bucketName, userId + "/user/" + sentence + ".mp3");
+        BlobId blobId = BlobId.of(bucketName, userId + "/user/" + sentence + ".wav");
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
-                .setContentType("audio/mpeg")
+                .setContentType("audio/wav")
                 .setAcl(new ArrayList<>(Arrays.asList(acl)))
                 .build();
 
@@ -39,9 +39,9 @@ public class StorageService {
     public String uploadModelAudioAndSend(String userId, ByteString audioContents) throws IOException {
         byte[] audioBytes = audioContents.toByteArray();
 
-        BlobId blobId = BlobId.of(bucketName, userId + "/model/ModelVoice" + randomString() + ".wav");
+        BlobId blobId = BlobId.of(bucketName, userId + "/model/ModelVoice" + randomString() + ".mp3");
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId)
-                .setContentType("audio/wav")
+                .setContentType("audio/mpeg")
                 .setAcl(new ArrayList<>(Arrays.asList(acl)))
                 .build();
 

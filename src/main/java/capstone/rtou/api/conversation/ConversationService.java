@@ -1,5 +1,6 @@
 package capstone.rtou.api.conversation;
 
+import capstone.rtou.api.auth.AuthRepository;
 import capstone.rtou.api.conversation.dto.ConversationResponse;
 import capstone.rtou.api.conversation.model.ModelService;
 import capstone.rtou.api.conversation.repository.CharacterInfoRepository;
@@ -24,6 +25,7 @@ import com.microsoft.cognitiveservices.speech.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -37,6 +39,7 @@ import java.util.concurrent.TimeoutException;
 @Service
 public class ConversationService {
 
+    private final AuthRepository authRepository;
     private final ConversationRepository conversationRepository;
     private final CharacterInfoRepository characterInfoRepository;
     private final ConversationCharacterRepository conversationCharacterRepository;
@@ -46,7 +49,8 @@ public class ConversationService {
     private final StorageService storageService;
     private final String key = "673540caf6af45cb94482557d5d1a726";
 
-    public ConversationService(ConversationRepository conversationRepository, CharacterInfoRepository characterInfoRepository, ConversationCharacterRepository conversationCharacterRepository, EstimationRepository estimationRepository, ErrorWordRepository errorWordRepository, StorageService storageService, ModelService modelService) {
+    public ConversationService(AuthRepository authRepository, ConversationRepository conversationRepository, CharacterInfoRepository characterInfoRepository, ConversationCharacterRepository conversationCharacterRepository, EstimationRepository estimationRepository, ErrorWordRepository errorWordRepository, StorageService storageService, ModelService modelService) {
+        this.authRepository = authRepository;
         this.conversationRepository = conversationRepository;
         this.characterInfoRepository = characterInfoRepository;
         this.conversationCharacterRepository = conversationCharacterRepository;
@@ -64,11 +68,17 @@ public class ConversationService {
      * @return
      * @throws IOException
      */
+    @Transactional
     public ConversationResponse startConversation(String userId, String characterName) throws IOException {
+
+        if (authRepository.existsById(userId)) {
+            return new ConversationResponse(false, "잘못된 사용자의 접근입니다.");
+        }
 
         String hello = "Hi. I'm "+ characterName + ". Nice to meet you!! What's your name?";
 
         modelService.getSentence("<start>");
+
         if (!characterInfoRepository.existsById(characterName)) {
             return new ConversationResponse(false, "존재하지 않는 캐릭터");
         }
@@ -78,8 +88,10 @@ public class ConversationService {
         } else {
             conversationCharacterRepository.save(new ConversationCharacter(userId,characterName));
         }
+
         CharacterInfo characterInfo = characterInfoRepository.findByName(characterName);
         ByteString speech = TextToSpeech(hello, characterInfo.getVoiceName(), characterInfo.getPitch());
+
         if (speech != null) {
             String audioLink = storageService.uploadModelAudioAndSend(userId, speech);
             return new ConversationResponse(true, "음성 생성 완료", audioLink);
@@ -98,6 +110,7 @@ public class ConversationService {
      * @throws InterruptedException
      * @throws TimeoutException
      */
+    @Transactional
     public ConversationResponse getNextAudio(String userId, MultipartFile audioFile) throws IOException, ExecutionException, InterruptedException, TimeoutException {
 
         String transcribe = SpeechToText(audioFile); // 사용자 음성 파일 텍스트로 변환
@@ -204,12 +217,11 @@ public class ConversationService {
             VoiceSelectionParams voice = VoiceSelectionParams.newBuilder()
                     .setLanguageCode("en-US")
                     .setCustomVoice(voiceParams)
-                    .setSsmlGender(SsmlVoiceGender.FEMALE)
                     .setName(voiceName)
                     .build();
 
             AudioConfig audioConfig = AudioConfig.newBuilder()
-                    .setAudioEncoding(AudioEncoding.LINEAR16)
+                    .setAudioEncoding(AudioEncoding.MP3)
                     .setSpeakingRate(0.8)
                     .setPitch(pitch)
                     .build();

@@ -10,9 +10,8 @@ import capstone.rtou.domain.estimation.EstimationResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +27,8 @@ public class EstimationService {
         this.errorWordRepository = errorWordRepository;
     }
 
-    public EstimationResponse getEstimation(String userId, String conversationId) {
+    @Transactional
+    public EstimationResponse getEstimation(String userId) {
 
         List<EstimationResult> results = estimationRepository.findAllByUserId(userId);
 
@@ -41,10 +41,10 @@ public class EstimationService {
             double sumPron = 0.0;
 
             for (EstimationResult i : results) {
-                sumAccuracy += i.getAccuracyScore();
-                sumFluency += i.getFluencyScore();
-                sumCompleteness += i.getCompletenessScore();
-                sumPron += i.getPronunciationScore();
+                sumAccuracy += i.getAccuracy();
+                sumFluency += i.getFluency();
+                sumCompleteness += i.getCompleteness();
+                sumPron += i.getPronunciation();
             }
             double avgAccuracy = sumAccuracy / results.size();
             double avgFluency = sumFluency / results.size();

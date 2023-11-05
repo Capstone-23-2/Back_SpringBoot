@@ -5,6 +5,7 @@ import capstone.rtou.api.attention.dto.AttentionResponse;
 import capstone.rtou.domain.attention.Attention;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,8 +20,9 @@ public class AttentionService {
         this.attentionRepository = attentionRepository;
     }
 
-    AttentionResponse attention(AttentionRequestDto attentionRequest) {
-        if (attentionRepository.existsAttentionByUserIdAndAttendDate(attentionRequest.getUserId(), attentionRequest.getDate())) {
+    @Transactional
+    public AttentionResponse attention(AttentionRequestDto attentionRequest) {
+        if (attentionRepository.existsAttentionByUserIdAndDate(attentionRequest.getUserId(), attentionRequest.getDate())) {
             return new AttentionResponse(false,"오늘은 이미 출석했습니다");
         } else {
             Attention attention = new Attention(attentionRequest.getUserId(), attentionRequest.getDate());
@@ -29,6 +31,7 @@ public class AttentionService {
         }
     }
 
+    @Transactional
     public AttentionResponse findAttentionById(String userId) {
         List<Attention> list = attentionRepository.findAllByUserId(userId);
 

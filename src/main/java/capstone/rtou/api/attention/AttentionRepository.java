@@ -13,5 +13,5 @@ public interface AttentionRepository extends JpaRepository<Attention, String> {
 
     List<Attention> findAllByUserId(String userId);
 
-    boolean existsAttentionByUserIdAndAttendDate(String userId, String attendDate);
+    boolean existsAttentionByUserIdAndDate(String userId, String date);
 }

@@ -17,9 +17,9 @@ public class EstimationController {
     }
 
     @GetMapping("/estimation")
-    ResponseEntity<EstimationResponse> getEstimation(@RequestParam String userId, @RequestParam String conversationId) {
+    ResponseEntity<EstimationResponse> getEstimation(@RequestParam String userId) {
 
-        EstimationResponse estimationResponse = estimationService.getEstimation(userId, conversationId);
+        EstimationResponse estimationResponse = estimationService.getEstimation(userId);
 
         return ResponseEntity.ok().body(estimationResponse);
     }

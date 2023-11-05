@@ -1,11 +1,11 @@
 package capstone.rtou.domain.estimation;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
+@Entity
 @Table(name = "estimations", indexes = @Index(name = "idx_estimation", columnList = "userid"))
 @NoArgsConstructor
 public class EstimationResult {
@@ -17,21 +17,21 @@ public class EstimationResult {
     String userId;
     @Column(nullable = false)
     String sentence;
-    @Column(name = "accuracyscore", nullable = false)
-    Double AccuracyScore;
-    @Column(name = "pronunciationscore", nullable = false)
-    Double PronunciationScore;
-    @Column(name = "fluencyscore", nullable = false)
-    Double FluencyScore;
-    @Column(name = "completenessscore",nullable = false)
-    Double CompletenessScore;
+    @Column(name = "accuracy", nullable = false)
+    Double accuracy;
+    @Column(name = "pronunciation", nullable = false)
+    Double pronunciation;
+    @Column(name = "fluency", nullable = false)
+    Double fluency;
+    @Column(name = "completeness",nullable = false)
+    Double completeness;
 
-    public EstimationResult(String userId, String sentence, Double accuracyScore, Double pronunciationScore, Double fluencyScore, Double completenessScore) {
+    public EstimationResult(String userId, String sentence, Double accuracy, Double pronunciation, Double fluency, Double completeness) {
         this.userId = userId;
         this.sentence = sentence;
-        AccuracyScore = accuracyScore;
-        PronunciationScore = pronunciationScore;
-        FluencyScore = fluencyScore;
-        CompletenessScore = completenessScore;
+        this.accuracy = accuracy;
+        pronunciation = pronunciation;
+        this.fluency = fluency;
+        this.completeness = completeness;
     }
 }

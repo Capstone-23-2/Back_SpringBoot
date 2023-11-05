@@ -16,10 +16,10 @@ public interface EstimationRepository extends JpaRepository<EstimationResult, Lo
     void deleteAllByUserId(String userId);
 
     @Query("SELECT e FROM EstimationResult e " +
-            "WHERE e.AccuracyScore <= :avgAccuracyScore " +
-            "AND e.FluencyScore <= :avgFluencyScore " +
-            "AND e.CompletenessScore <= :avgCompletenessScore " +
-            "AND e.PronunciationScore <= :avgPronScore")
+            "WHERE e.accuracy <= :avgAccuracyScore " +
+            "AND e.fluency <= :avgFluencyScore " +
+            "AND e.completeness <= :avgCompletenessScore " +
+            "AND e.pronunciation <= :avgPronScore")
     List<EstimationResult> findByMultipleScores(
             @Param("avgAccuracyScore") double avgAccuracyScore,
             @Param("avgFluencyScore") double avgFluencyScore,

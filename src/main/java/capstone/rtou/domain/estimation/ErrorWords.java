@@ -6,7 +6,8 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-@Table(name = "errorowords", indexes = @Index(name = "idx_errors", columnList = "userid, sentence"))
+@Entity
+@Table(name = "errorwords", indexes = @Index(name = "idx_errors", columnList = "userid, sentence"))
 public class ErrorWords {
 
     @Id
