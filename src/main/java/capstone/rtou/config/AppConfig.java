@@ -37,27 +37,4 @@ public class AppConfig {
                 .cors(AbstractHttpConfigurer::disable);
         return http.build();
     }
-
-    @Bean
-    public OpenAPI openAPI() {
-        final Server devServer = new Server();
-        devServer.setUrl(devUrl);
-        devServer.description("개발 환경 서버 URL");
-
-        final Server prodServer = new Server();
-        prodServer.setUrl(prodUrl);
-        prodServer.description("운영 환경 서버 URL");
-
-        return new OpenAPI()
-                .components(new Components())
-                .info(apiInfo())
-                .servers(List.of(devServer, prodServer));
-    }
-
-    private Info apiInfo() {
-        return new Info()
-                .title("RtoU API 명세서 ")
-                .description("API 명세서")
-                .version("1.0.0");
-    }
 }
