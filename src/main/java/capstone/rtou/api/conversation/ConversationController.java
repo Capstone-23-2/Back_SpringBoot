@@ -1,6 +1,7 @@
 package capstone.rtou.api.conversation;
 
 import capstone.rtou.api.conversation.dto.ConversationResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
+@Tag(name = "사용자와 AR 간 대화 API", description = "대화 시작, 다음 대화 및 발음 평가")
 @RestController
 @RequestMapping("api/conversation")
 @Slf4j
