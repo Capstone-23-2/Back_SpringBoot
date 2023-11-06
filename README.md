@@ -1,2 +1,2 @@
-# RtoU
-중앙대학교 2023-2 캡스톤디자인(1)
+# RtoU Server
+개발 환경: Spring Boot 3, Java 17, MySQL
