@@ -6,6 +6,7 @@ import capstone.rtou.api.conversation.model.ModelService;
 import capstone.rtou.api.conversation.repository.CharacterInfoRepository;
 import capstone.rtou.api.conversation.repository.ConversationCharacterRepository;
 import capstone.rtou.api.conversation.repository.ConversationRepository;
+import capstone.rtou.api.estimation.dto.EstimationResponse;
 import capstone.rtou.api.estimation.repository.ErrorWordRepository;
 import capstone.rtou.api.estimation.repository.EstimationRepository;
 import capstone.rtou.domain.conversation.CharacterInfo;
@@ -30,10 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 @Slf4j
 @Service
@@ -249,8 +247,9 @@ public class ConversationService {
      * @throws TimeoutException
      * @throws JsonProcessingException
      */
-    @Async
+    @Async(value = "PronAsyncExecutor")
     public void pronunciationAssessment(String userId, String sentence, String audioLink) throws ExecutionException, InterruptedException, TimeoutException, JsonProcessingException {
+        log.info("Async Pronunciation Start");
 
         SpeechConfig speechConfig = SpeechConfig.fromSubscription(key, "eastus");
         String lang = "en-US";
@@ -304,5 +303,7 @@ public class ConversationService {
         speechConfig.close();
         pronunciationConfig.close();
         speechRecognitionResult.close();
+
+        log.info("Async Pronunciation End");
     }
 }
