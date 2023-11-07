@@ -15,10 +15,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CharacterInfo {
 
-    @Id @Column
+    @Id
+    @Column(name = "name")
     String name; // 캐릭터 이름
     @Column(name = "voicename")
     String voiceName; // 음성명
-    @Column
+    @Column(name = "pitch")
     double pitch; // 음성 높낮이
+
 }

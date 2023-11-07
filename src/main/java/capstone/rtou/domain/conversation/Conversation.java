@@ -13,15 +13,12 @@ import lombok.NoArgsConstructor;
 public class Conversation {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
     Long id;
-
     @Column(name = "userid",nullable = false)
     String userId;
-
     @Column(name = "audiofilelink", nullable = false)
     String audioFileLink;
-
     @Column(name = "usersentence", nullable = false)
     String userSentence;
 

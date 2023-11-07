@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 public class EstimationResult {
 
     @Id
+    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
     @Column(name = "userid", nullable = false)

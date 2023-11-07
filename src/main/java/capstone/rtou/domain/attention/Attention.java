@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 public class Attention {
 
     @Id
+    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
     @Column(name = "userid", nullable = false)

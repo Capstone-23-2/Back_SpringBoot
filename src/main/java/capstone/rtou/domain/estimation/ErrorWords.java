@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 public class ErrorWords {
 
     @Id
-    @Column
+    @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
     @Column(name = "userid", nullable = false)
