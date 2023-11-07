@@ -22,7 +22,7 @@ public class AuthService {
 
         if (authRepository.existsById(authRequestDto.getUserId())) {
             log.info("Exists User={}", authRequestDto.getUserId());
-            return new AuthResponse(false, "이미 존재하는 아이디거나 다른 소셜 아이디로 등록된 계정입니다.");
+            return new AuthResponse(false, "이미 존재하는 아이디입니다.");
         } else {
             User user = new User(authRequestDto.getUserId(), authRequestDto.getSso());
             authRepository.save(user);

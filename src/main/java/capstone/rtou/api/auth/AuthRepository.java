@@ -9,5 +9,4 @@ import java.util.Optional;
 @Repository
 public interface AuthRepository extends JpaRepository<User, String> {
 
-    boolean existsUserByUserIdAndSso(String userId, String SSO);
 }
