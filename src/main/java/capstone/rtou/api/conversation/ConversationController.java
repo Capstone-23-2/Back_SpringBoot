@@ -34,8 +34,7 @@ public class ConversationController {
 
     @Operation(summary = "대화 시작 API", description = "AR과 사용자 사이의 대화 시작.")
     @GetMapping("/start")
-    @ApiResponse(responseCode = "200", description = "status가 false인 경우 잘못된 접근 또는 사용할 캐릭터의 정보가 없음.", content = @Content(schema = @Schema(implementation = ConversationResponse.class)))
-    @ApiResponse(responseCode = "200", description = "status가 ture인 경우 처음 대화 음성 생성.", content = @Content(schema = @Schema(implementation = ConversationResponse.class)))
+    @ApiResponse(responseCode = "200", description = "status가 false인 경우 잘못된 접근 또는 사용할 캐릭터의 정보가 없음, true인 경우 처음 대화 음성 생성.", content = @Content(schema = @Schema(implementation = ConversationResponse.class)))
     public ResponseEntity<ConversationResponse> startConversation(@Validated @RequestParam String userId, @Validated @RequestParam String characterName) throws IOException {
 
         ConversationResponse conversationResponse = conversationService.startConversation(userId, characterName);
@@ -44,8 +43,7 @@ public class ConversationController {
     }
 
     @Operation(summary = "다음 대화 API", description = "사용자의 답을 듣고 다음 대화를 함.")
-    @ApiResponse(responseCode = "200", description = "status가 false인 경우 음성이 생성되지 않음.", content = @Content(schema = @Schema(implementation = ConversationResponse.class)))
-    @ApiResponse(responseCode = "200", description = "status가 true인 경우 다음 대화 음성이 생성됨.", content = @Content(schema = @Schema(implementation = ConversationResponse.class)))
+    @ApiResponse(responseCode = "200", description = "status가 false인 경우 음성이 생성되지 않음, true인 경우 다음 대화 음성이 생성됨.", content = @Content(schema = @Schema(implementation = ConversationResponse.class)))
     @PostMapping(value = "/audio/{userId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<ConversationResponse> receiveAudio(@PathVariable(name = "userId") String userId,
                                                              @Validated @Parameter(description = "multipart/form-data 형식의 오디오 파일을 input으로 받음. key값은 audioFile"

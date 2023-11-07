@@ -24,8 +24,7 @@ public class EstimationController {
     }
 
     @Operation(summary = "음성 평가 API", description = "사용자가 본인의 음성의 정확도, 능숙도, 완성도, 발음에 대한 점수와 틀린 부분을 알 수 있다.")
-    @ApiResponse(responseCode = "200", description = "status가 false인 경우 사용자의 음성 평가 결과가 없음.", content = @Content(schema = @Schema(implementation = ConversationResponse.class)))
-    @ApiResponse(responseCode = "200", description = "status가 true인 경우 사용자의 음성 평가 결과 응답.", content = @Content(schema = @Schema(implementation = ConversationResponse.class)))
+    @ApiResponse(responseCode = "200", description = "status가 false인 경우 사용자의 음성 평가 결과가 없음, true인 경우 사용자의 음성 평가 결과 응답.", content = @Content(schema = @Schema(implementation = ConversationResponse.class)))
     @GetMapping("/estimation")
     ResponseEntity<EstimationResponse> getEstimation(@RequestParam String userId) {
 
