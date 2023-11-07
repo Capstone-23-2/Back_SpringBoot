@@ -6,7 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table(name = "users", uniqueConstraints = {@UniqueConstraint(columnNames = "userId")})
+@Table(name = "users", uniqueConstraints = {@UniqueConstraint(columnNames = "userid")})
 @AllArgsConstructor
 @NoArgsConstructor
 public class User {
@@ -15,6 +15,6 @@ public class User {
     @Column(name = "userid",nullable = false)
     private String userId;
 
-    @Column(nullable = false)
+    @Column(name = "sso", nullable = false)
     private String sso;
 }

@@ -16,7 +16,7 @@ public class EstimationResult {
     Long id;
     @Column(name = "userid", nullable = false)
     String userId;
-    @Column(nullable = false)
+    @Column(name = "sentence", nullable = false)
     String sentence;
     @Column(name = "accuracy", nullable = false)
     Double accuracy;

@@ -9,7 +9,7 @@ import capstone.rtou.api.conversation.repository.ConversationRepository;
 import capstone.rtou.api.estimation.repository.ErrorWordRepository;
 import capstone.rtou.api.estimation.repository.EstimationRepository;
 import capstone.rtou.domain.conversation.CharacterInfo;
-import capstone.rtou.domain.conversation.Conversation;
+import capstone.rtou.domain.conversation.Conversations;
 import capstone.rtou.domain.conversation.ConversationCharacter;
 import capstone.rtou.domain.estimation.ErrorWords;
 import capstone.rtou.domain.estimation.EstimationResult;
@@ -120,8 +120,8 @@ public class ConversationService {
             // 사용자 음성 저장.
             String clientAudioLink = storageService.uploadClientAudio(userId, audioFile, transcribe);
             pronunciationAssessment(userId, transcribe, clientAudioLink);
-            Conversation conversation = new Conversation(userId, clientAudioLink, transcribe);
-            conversationRepository.save(conversation);
+            Conversations conversations = new Conversations(userId, clientAudioLink, transcribe);
+            conversationRepository.save(conversations);
 
             return new ConversationResponse(true, "사용자 음성 저장 및 음성 생성 완료", mlUrl);
         } else {

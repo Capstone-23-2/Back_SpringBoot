@@ -1,24 +1,27 @@
-create table if not exists RtoU.users
+use RtoU;
+
+create table if not exists users
 (
     userid varchar(20) primary key,
     sso    varchar(10) not null
 );
 
-create table if not exists RtoU.attention
+create table if not exists attention
 (
     id     bigint auto_increment primary key,
     userid varchar(20) not null,
-    date   varchar(8)  not null
+    date   varchar(8)  not null,
+    index idx_user (userid)
 );
 
-create table if not exists RtoU.characterinfo
+create table if not exists characterinfo
 (
     name      varchar(15) primary key,
     voicename varchar(20) not null,
     pitch     double      not null
 );
 
-create table if not exists RtoU.conversations
+create table if not exists conversations
 (
     id            bigint auto_increment primary key,
     userid        varchar(20)  not null,
@@ -27,13 +30,13 @@ create table if not exists RtoU.conversations
     index idx_conversations (userid)
 );
 
-create table if not exists RtoU.conversationcharacter
+create table if not exists conversationcharacter
 (
     userid        varchar(20) primary key,
     charactername varchar(15) not null
 );
 
-create table if not exists RtoU.estimations
+create table if not exists estimations
 (
     id            bigint auto_increment primary key,
     userid        varchar(20)  not null,
@@ -46,9 +49,9 @@ create table if not exists RtoU.estimations
 );
 
 
-create table if not exists RtoU.errorwords
+create table if not exists errorwords
 (
-    id        bigint auto_increment primary key,
+    id        bigint not null auto_increment primary key,
     userid    varchar(20)  not null,
     sentence  varchar(100) not null,
     errorword varchar(100) not null,

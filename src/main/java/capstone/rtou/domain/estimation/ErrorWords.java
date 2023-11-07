@@ -16,7 +16,7 @@ public class ErrorWords {
     Long id;
     @Column(name = "userid", nullable = false)
     String userId;
-    @Column(nullable = false)
+    @Column(name = "sentence", nullable = false)
     String sentence;
     @Column(name = "errorword", nullable = false)
     String errorWord;

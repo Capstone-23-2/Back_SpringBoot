@@ -1,13 +1,11 @@
 package capstone.rtou.api.conversation.repository;
 
-import capstone.rtou.domain.conversation.Conversation;
+import capstone.rtou.domain.conversation.Conversations;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
-
 @Repository
-public interface ConversationRepository extends JpaRepository<Conversation, Long> {
+public interface ConversationRepository extends JpaRepository<Conversations, Long> {
 
-    Conversation findByUserIdAndUserSentence(String userId, String sentence);
+    Conversations findByUserIdAndUserSentence(String userId, String sentence);
 }
