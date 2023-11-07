@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="capstone.rtou.RtoUApplicationTests" tests="1" skipped="0" failures="0" errors="0" timestamp="2023-11-07T09:58:09" hostname="DESKTOP-8KUI5BT" time="0.035">
-  <properties/>
-  <testcase name="contextLoads()" classname="capstone.rtou.RtoUApplicationTests" time="0.035"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>
