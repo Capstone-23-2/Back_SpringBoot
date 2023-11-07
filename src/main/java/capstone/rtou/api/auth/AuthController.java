@@ -1,7 +1,12 @@
 package capstone.rtou.api.auth;
 
+import capstone.rtou.api.attention.dto.AttentionResponse;
 import capstone.rtou.api.auth.dto.AuthRequestDto;
 import capstone.rtou.api.auth.dto.AuthResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +26,9 @@ public class AuthController {
         this.authService = authService;
     }
 
+    @Operation(summary = "출석 체크", description = "사용자가 출석 등록")
+    @ApiResponse(responseCode = "200", description = "status가 true인 경우, 회원 정보 정상 등록", content = @Content(schema = @Schema(implementation = AuthResponse.class)))
+    @ApiResponse(responseCode = "200", description = "status가 false인 경우, 존재하는 계정.", content = @Content(schema = @Schema(implementation = AuthResponse.class)))
     @PostMapping("/signup")
     public ResponseEntity<AuthResponse> registerUser(@RequestBody @Validated AuthRequestDto authRequestDto) throws IOException {
         log.info("회원 등록 시작");

@@ -186,7 +186,7 @@ public class ConversationService {
                 return sentence;
             } else {
                 log.error("No transcription result found");
-                return "";
+                return null;
             }
         } catch (Exception e) {
             throw new RuntimeException(e);

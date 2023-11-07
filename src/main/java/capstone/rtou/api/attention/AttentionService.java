@@ -2,6 +2,7 @@ package capstone.rtou.api.attention;
 
 import capstone.rtou.api.attention.dto.AttentionRequestDto;
 import capstone.rtou.api.attention.dto.AttentionResponse;
+import capstone.rtou.api.auth.AuthRepository;
 import capstone.rtou.domain.attention.Attention;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -14,17 +15,22 @@ import java.util.List;
 @Slf4j
 public class AttentionService {
 
+    private final AuthRepository authRepository;
     private final AttentionRepository attentionRepository;
 
-    public AttentionService(AttentionRepository attentionRepository) {
+    public AttentionService(AuthRepository authRepository, AttentionRepository attentionRepository) {
+        this.authRepository = authRepository;
         this.attentionRepository = attentionRepository;
     }
 
     @Transactional
     public AttentionResponse attention(AttentionRequestDto attentionRequest) {
         if (attentionRepository.existsAttentionByUserIdAndDate(attentionRequest.getUserId(), attentionRequest.getDate())) {
-            return new AttentionResponse(false,"오늘은 이미 출석했습니다");
+            return new AttentionResponse(false, "오늘은 이미 출석했습니다");
         } else {
+            if (authRepository.existsById(attentionRequest.getUserId())) {
+                return new AttentionResponse(false, "잘못된 사용자의 접근입니다.");
+            }
             Attention attention = new Attention(attentionRequest.getUserId(), attentionRequest.getDate());
             attentionRepository.save(attention);
             return new AttentionResponse(true, "출석 완료");
