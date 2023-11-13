@@ -75,7 +75,7 @@ public class ConversationService {
 
         String hello = "Hi. I'm "+ characterName + ". Nice to meet you!! What's your name?";
 
-        modelService.getSentence("<start>");
+        modelService.getSentence("<start>"+characterName);
 
         if (!characterInfoRepository.existsById(characterName)) {
             return new ConversationResponse(false, "존재하지 않는 캐릭터");
