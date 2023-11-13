@@ -69,7 +69,7 @@ public class ConversationService {
     @Transactional
     public ConversationResponse startConversation(String userId, String characterName) throws IOException {
 
-        if (authRepository.existsById(userId)) {
+        if (!authRepository.existsById(userId)) {
             return new ConversationResponse(false, "잘못된 사용자의 접근입니다.");
         }
 
