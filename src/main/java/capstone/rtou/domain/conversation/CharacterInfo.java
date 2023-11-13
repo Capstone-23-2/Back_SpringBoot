@@ -22,4 +22,6 @@ public class CharacterInfo {
     String voiceName; // 음성명
     @Column(name = "pitch")
     double pitch; // 음성 높낮이
+    @Column(name = "langcode")
+    String langCode;
 }

@@ -88,7 +88,7 @@ public class ConversationService {
         }
 
         CharacterInfo characterInfo = characterInfoRepository.findByName(characterName);
-        ByteString speech = TextToSpeech(hello, characterInfo.getVoiceName(), characterInfo.getPitch());
+        ByteString speech = TextToSpeech(hello, characterInfo.getVoiceName(), characterInfo.getPitch(), characterInfo.getLangCode());
 
         if (speech != null) {
             String audioLink = storageService.uploadModelAudioAndSend(userId, speech);
@@ -139,7 +139,7 @@ public class ConversationService {
         String mlSentence = modelService.getSentence(sentence);
         String character = conversationCharacterRepository.findByUserId(userId);
         CharacterInfo characterInfo = characterInfoRepository.getReferenceById(character);
-        ByteString speech = TextToSpeech(mlSentence, characterInfo.getVoiceName(), characterInfo.getPitch());
+        ByteString speech = TextToSpeech(mlSentence, characterInfo.getVoiceName(), characterInfo.getPitch(), characterInfo.getLangCode());
 
         if (speech != null) {
             return storageService.uploadModelAudioAndSend(userId, speech);
@@ -199,7 +199,7 @@ public class ConversationService {
      * @return
      * @throws IOException
      */
-    private ByteString TextToSpeech(String sentence, String voiceName, double pitch) throws IOException {
+    private ByteString TextToSpeech(String sentence, String voiceName, double pitch, String langCode) throws IOException {
 
         if (sentence.isEmpty()) {
             throw new IOException("Required sentence is not present.");
@@ -213,7 +213,7 @@ public class ConversationService {
                     .build();
 
             VoiceSelectionParams voice = VoiceSelectionParams.newBuilder()
-                    .setLanguageCode("en-US")
+                    .setLanguageCode(langCode)
                     .setCustomVoice(voiceParams)
                     .setName(voiceName)
                     .build();

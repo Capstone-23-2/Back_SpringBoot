@@ -15,7 +15,8 @@ create table if not exists rtou.characterinfo
 (
     name      varchar(15) primary key,
     voicename varchar(20) not null,
-    pitch     double      not null
+    pitch     double      not null,
+    langcode  varchar(10) not null
 );
 
 create table if not exists rtou.conversations
