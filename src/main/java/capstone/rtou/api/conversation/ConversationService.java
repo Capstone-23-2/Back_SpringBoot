@@ -73,10 +73,6 @@ public class ConversationService {
             return new ConversationResponse(false, "잘못된 사용자의 접근입니다.");
         }
 
-        String hello = "Hi. I'm "+ characterName + ". Nice to meet you!! What's your name?";
-
-        modelService.getSentence("<start>"+characterName);
-
         if (!characterInfoRepository.existsById(characterName)) {
             return new ConversationResponse(false, "존재하지 않는 캐릭터");
         }
@@ -86,6 +82,10 @@ public class ConversationService {
         } else {
             conversationCharacterRepository.save(new ConversationCharacter(userId,characterName));
         }
+
+        String hello = "Hi. I'm "+ characterName + ". Nice to meet you!! What's your name?";
+
+        modelService.getSentence("<start>"+characterName);
 
         CharacterInfo characterInfo = characterInfoRepository.findByName(characterName);
         ByteString speech = TextToSpeech(hello, characterInfo.getVoiceName(), characterInfo.getPitch(), characterInfo.getLangCode());

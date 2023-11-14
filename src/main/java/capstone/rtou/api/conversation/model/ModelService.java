@@ -16,7 +16,7 @@ public class ModelService {
     }
 
     public String getSentence(String sentence) {
-        String apiUrl = "http://13.124.7.35:8000/conversation"; // API 엔드포인트 URL
+        String apiUrl = "http://localhost:8000/conversation"; // API 엔드포인트 URL
 
         // API 호출
         ModelResponse modelResponse = restTemplate.postForObject(apiUrl, new ModelRequest(1, sentence), ModelResponse.class);
