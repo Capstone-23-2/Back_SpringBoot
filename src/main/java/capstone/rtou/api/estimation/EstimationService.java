@@ -35,23 +35,13 @@ public class EstimationService {
         if (!results.isEmpty()) {
             List<Result> estimationResults = new ArrayList<>();
 
-            double sumAccuracy = 0.0;
-            double sumFluency = 0.0;
-            double sumCompleteness = 0.0;
-            double sumPron = 0.0;
+            double avgAccuracy = estimationRepository.getAverageAccuracyByUserId(userId);
+            double avgFluency = estimationRepository.getAverageFluencyByUserId(userId);
+            double avgCompleteness = estimationRepository.getAverageCompletenessByUserId(userId);
+            double avgPron = estimationRepository.getAveragePronByUserId(userId);
 
-            for (EstimationResult i : results) {
-                sumAccuracy += i.getAccuracy();
-                sumFluency += i.getFluency();
-                sumCompleteness += i.getCompleteness();
-                sumPron += i.getPronunciation();
-            }
-            double avgAccuracy = sumAccuracy / results.size();
-            double avgFluency = sumFluency / results.size();
-            double avgCompleteness = sumCompleteness / results.size();
-            double avgPron = sumPron / results.size();
 
-            List<EstimationResult> resultList = estimationRepository.findByMultipleScores(avgAccuracy, avgFluency, avgCompleteness, avgPron);
+            List<EstimationResult> resultList = estimationRepository.findByMultipleScores(userId);
             for (EstimationResult i : resultList) {
                 List<ErrorWords> words = errorWordRepository.findAllByUserIdAndSentence(userId, i.getSentence());
                 List<ErrorWord> errorWords = new ArrayList<>();

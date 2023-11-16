@@ -15,11 +15,11 @@ public class ModelService {
         this.restTemplate = restTemplateBuilder.build();
     }
 
-    public String getSentence(String sentence) {
+    public String getSentence(String characterName, String sentence) {
         String apiUrl = "http://localhost:8000/conversation"; // API 엔드포인트 URL
 
         // API 호출
-        ModelResponse modelResponse = restTemplate.postForObject(apiUrl, new ModelRequest(1, sentence), ModelResponse.class);
+        ModelResponse modelResponse = restTemplate.postForObject(apiUrl, new ModelRequest(1, sentence, characterName), ModelResponse.class);
         return modelResponse.getText();
     }
 

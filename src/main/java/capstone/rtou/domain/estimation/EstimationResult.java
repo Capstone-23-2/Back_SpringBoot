@@ -31,7 +31,7 @@ public class EstimationResult {
         this.userId = userId;
         this.sentence = sentence;
         this.accuracy = accuracy;
-        pronunciation = pronunciation;
+        this.pronunciation = pronunciation;
         this.fluency = fluency;
         this.completeness = completeness;
     }

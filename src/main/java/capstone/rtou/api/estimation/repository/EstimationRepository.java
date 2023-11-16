@@ -15,16 +15,21 @@ public interface EstimationRepository extends JpaRepository<EstimationResult, Lo
 
     void deleteAllByUserId(String userId);
 
+    @Query("select AVG (e.accuracy) from EstimationResult e where e.userId = :userId")
+    double getAverageAccuracyByUserId(@Param("userId") String userId);
+
+    @Query("select AVG (e.fluency) from EstimationResult e where e.userId = :userId")
+    double getAverageFluencyByUserId(@Param("userId") String userId);
+
+    @Query("select AVG (e.completeness) from EstimationResult e where e.userId = :userId")
+    double getAverageCompletenessByUserId(@Param("userId") String userId);
+
+    @Query("select AVG (e.pronunciation) from EstimationResult e where e.userId = :userId")
+    double getAveragePronByUserId(@Param("userId") String userId);
+
     @Query("SELECT e FROM EstimationResult e " +
-            "WHERE e.accuracy <= :avgAccuracyScore " +
-            "AND e.fluency <= :avgFluencyScore " +
-            "AND e.completeness <= :avgCompletenessScore " +
-            "AND e.pronunciation <= :avgPronScore")
-    List<EstimationResult> findByMultipleScores(
-            @Param("avgAccuracyScore") double avgAccuracyScore,
-            @Param("avgFluencyScore") double avgFluencyScore,
-            @Param("avgCompletenessScore") double avgCompletenessScore,
-            @Param("avgPronScore") double avgPronScore
-    );
+            "WHERE e.userId = :userId AND e.accuracy < AVG (e.accuracy) AND e.fluency < AVG (e.fluency)" +
+            "AND e.pronunciation < AVG (e.pronunciation) AND e.completeness <= AVG (e.completeness)")
+    List<EstimationResult> findByMultipleScores(@Param("userId") String userId);
 
 }

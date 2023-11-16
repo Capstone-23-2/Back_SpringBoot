@@ -9,4 +9,5 @@ public class ModelRequest {
 
     int user_id;
     String sentence;
+    String character_name;
 }

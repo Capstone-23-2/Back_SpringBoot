@@ -24,6 +24,7 @@ import com.google.cloud.texttospeech.v1.*;
 import com.google.protobuf.ByteString;
 import com.microsoft.cognitiveservices.speech.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,21 +61,20 @@ public class ConversationService {
 
     /**
      * 시작 대화 생성
-     *
      * @param userId
      * @param characterName
      * @return
      * @throws IOException
      */
     @Transactional
-    public ConversationResponse startConversation(String userId, String characterName) throws IOException {
+    public ByteArrayResource startConversation(String userId, String characterName) throws IOException {
 
         if (!authRepository.existsById(userId)) {
-            return new ConversationResponse(false, "잘못된 사용자의 접근입니다.");
+            return null;
         }
 
         if (!characterInfoRepository.existsById(characterName)) {
-            return new ConversationResponse(false, "존재하지 않는 캐릭터");
+            return null;
         }
 
         if (conversationCharacterRepository.existsById(userId)) {
@@ -85,16 +85,15 @@ public class ConversationService {
 
         String hello = "Hi. I'm "+ characterName + ". Nice to meet you!! What's your name?";
 
-        modelService.getSentence("<start>"+characterName);
+        modelService.getSentence(characterName, "<start>");
 
         CharacterInfo characterInfo = characterInfoRepository.findByName(characterName);
         ByteString speech = TextToSpeech(hello, characterInfo.getVoiceName(), characterInfo.getPitch(), characterInfo.getLangCode());
 
         if (speech != null) {
-            String audioLink = storageService.uploadModelAudioAndSend(userId, speech);
-            return new ConversationResponse(true, "음성 생성 완료", audioLink);
+            return new ByteArrayResource(speech.toByteArray());
         } else {
-            return new ConversationResponse(false, "음성이 생성X");
+            return null;
         }
     }
 
@@ -109,21 +108,21 @@ public class ConversationService {
      * @throws TimeoutException
      */
     @Transactional
-    public ConversationResponse getNextAudio(String userId, MultipartFile audioFile) throws IOException, ExecutionException, InterruptedException, TimeoutException {
+    public ByteArrayResource getNextAudio(String userId, MultipartFile audioFile) throws IOException, ExecutionException, InterruptedException, TimeoutException {
 
         String transcribe = SpeechToText(audioFile); // 사용자 음성 파일 텍스트로 변환
-        String mlUrl = getFromModel(userId, transcribe); // 위에서 얻은 사용자의 문장으로부터 모델에게서 다음 문장 가져오기
+        ByteString model = getFromModel(userId, transcribe); // 위에서 얻은 사용자의 문장으로부터 모델에게서 다음 문장 가져오기
 
-        if (mlUrl != null) {
+        if (model != null) {
             // 사용자 음성 저장.
             String clientAudioLink = storageService.uploadClientAudio(userId, audioFile, transcribe);
             pronunciationAssessment(userId, transcribe, clientAudioLink);
             Conversations conversations = new Conversations(userId, clientAudioLink, transcribe);
             conversationRepository.save(conversations);
 
-            return new ConversationResponse(true, "사용자 음성 저장 및 음성 생성 완료", mlUrl);
+            return new ByteArrayResource(model.toByteArray());
         } else {
-            return new ConversationResponse(false, "음성 생성 X");
+            return null;
         }
     }
 
@@ -134,15 +133,15 @@ public class ConversationService {
      * @return
      * @throws IOException
      */
-    private String getFromModel(String userId, String sentence) throws IOException {
+    private ByteString getFromModel(String userId, String sentence) throws IOException {
         // 모델 API와 연결.
-        String mlSentence = modelService.getSentence(sentence);
         String character = conversationCharacterRepository.findByUserId(userId);
+        String mlSentence = modelService.getSentence(character, sentence);
         CharacterInfo characterInfo = characterInfoRepository.getReferenceById(character);
         ByteString speech = TextToSpeech(mlSentence, characterInfo.getVoiceName(), characterInfo.getPitch(), characterInfo.getLangCode());
 
         if (speech != null) {
-            return storageService.uploadModelAudioAndSend(userId, speech);
+            return speech;
         } else {
             return null;
         }
@@ -174,6 +173,7 @@ public class ConversationService {
                     .setSampleRateHertz(44100)
                     .setLanguageCode("en-US")
                     .build();
+
 
             RecognizeResponse response = speechClient.recognize(recognitionConfig, recognitionAudio);
             List<SpeechRecognitionResult> resultList = response.getResultsList();

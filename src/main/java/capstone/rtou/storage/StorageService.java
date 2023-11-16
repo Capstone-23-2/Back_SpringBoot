@@ -47,6 +47,7 @@ public class StorageService {
 
         Blob blob = storage.createFrom(blobInfo, new ByteArrayInputStream(audioBytes));
 
+
         if (blob != null) {
             log.info("Send Url = {}", blob.getMediaLink());
             return blob.getMediaLink();

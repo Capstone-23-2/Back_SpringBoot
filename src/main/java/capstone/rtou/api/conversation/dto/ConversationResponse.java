@@ -8,18 +8,18 @@ import lombok.Getter;
 @Getter
 public class ConversationResponse {
 
-    boolean status;
+    int status;
     @JsonInclude(value = JsonInclude.Include.NON_NULL)
     String message;
     @JsonInclude(value = JsonInclude.Include.NON_NULL)
     String url;
 
-    public ConversationResponse(boolean status, String message) {
+    public ConversationResponse(int status, String message) {
         this.status = status;
         this.message = message;
     }
 
-    public ConversationResponse(boolean status, String message, String url) {
+    public ConversationResponse(int status, String message, String url) {
         this.status = status;
         this.message = message;
         this.url = url;
