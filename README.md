@@ -1,4 +1,4 @@
-# RtoU Server
+# AltoU Server
 ## 개발 환경
 - Spring Boot 3.1.3, Java 17, MySQL
 ## API
