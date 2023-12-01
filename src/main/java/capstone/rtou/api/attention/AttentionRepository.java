@@ -1,17 +1,16 @@
 package capstone.rtou.api.attention;
 
-import capstone.rtou.domain.attention.Attention;
+import capstone.rtou.domain.attention.Attentions;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
-public interface AttentionRepository extends JpaRepository<Attention, String> {
+public interface AttentionRepository extends JpaRepository<Attentions, String> {
 
-    List<Attention> findAllByUserId(String userId);
+    List<Attentions> findAllByUserId(String userId);
 
-    boolean existsAttentionByUserIdAndDate(String userId, String date);
+    boolean existsAttentionByUserIdAndDate(String userId, Date date);
 }

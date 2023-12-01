@@ -26,24 +26,26 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+	implementation 'org.springframework.boot:spring-boot-starter-aop'
 	implementation 'mysql:mysql-connector-java:8.0.32'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0'
 
 	// Google Library
-	implementation platform('com.google.cloud:libraries-bom:26.25.0')
+	implementation platform('com.google.cloud:libraries-bom:26.10.0')
 
 	// Google Storage
 	implementation 'com.google.cloud:google-cloud-storage'
 
 	// Google STT&TTS
-	implementation "com.google.cloud:google-cloud-texttospeech:2.18.0"
-	implementation "com.google.cloud:google-cloud-speech:4.18.0"
-	implementation "com.google.protobuf:protobuf-javalite:3.22.2"
-	implementation "com.fasterxml.jackson.core:jackson-databind:2.15.1"
+	implementation "com.google.cloud:google-cloud-texttospeech"
+	implementation "com.google.cloud:google-cloud-speech"
+	implementation "com.google.protobuf:protobuf-java"
+	implementation "com.fasterxml.jackson.core:jackson-databind"
 
-	// Azure AI
-	implementation group: 'com.microsoft.cognitiveservices.speech', name: 'client-sdk', version: "1.32.1", ext: "jar"
+	// Azure
+//	implementation 'com.azu'
+	implementation group: 'com.microsoft.cognitiveservices.speech', name: 'client-sdk', version: "1.33.0", ext: "jar"
 
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'com.mysql:mysql-connector-j:8.0.33'

@@ -26,7 +26,7 @@ public class AuthController {
         this.authService = authService;
     }
 
-    @Operation(summary = "출석 체크", description = "사용자가 출석 등록")
+    @Operation(summary = "회원 아이디 저장", description = "사용자가 출석 등록")
     @ApiResponse(responseCode = "200", description = "status가 true인 경우, 회원 정보 정상 등록, false인 경우, 존재하는 계정.", content = @Content(schema = @Schema(implementation = AuthResponse.class)))
     @PostMapping("/signup")
     public ResponseEntity<AuthResponse> registerUser(@RequestBody @Validated AuthRequestDto authRequestDto) throws IOException {

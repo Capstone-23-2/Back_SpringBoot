@@ -6,12 +6,13 @@ create table if not exists users
     sso    varchar(10) not null
 );
 
-create table if not exists attention
+create table if not exists attentions
 (
     id     bigint auto_increment primary key,
     userid varchar(20) not null,
-    date   varchar(8)  not null,
-    index idx_user (userid)
+    date   date        default (curdate()),
+    index idx_attention (userid),
+    foreign key (userid) references users (userid) on delete cascade
 );
 
 create table if not exists characterinfo
@@ -22,42 +23,63 @@ create table if not exists characterinfo
     langcode  varchar(10) not null
 );
 
-create table if not exists conversations
-(
-    id            bigint auto_increment primary key,
-    userid        varchar(20)  not null,
-    audiofilelink varchar(100) not null,
-    usersentence  varchar(100) not null,
-    index idx_conversations (userid)
-);
-
 create table if not exists conversationcharacter
 (
-    userid        varchar(20) primary key,
-    charactername varchar(15) not null
+    userid        varchar(20) not null,
+    charactername varchar(15) not null,
+    primary key (userid, charactername),
+    foreign key (userid) references users (userid) on delete cascade,
+    foreign key (charactername) references characterinfo (name) on delete cascade
+);
+
+create table if not exists conversations
+(
+    userid         varchar(20)  not null,
+    conversationid varchar(20) not null,
+    sentence       varchar(255) not null,
+    date           datetime default current_timestamp,
+    primary key (userid, conversationid, sentence),
+    index idx_conversations (userid, conversationid),
+    index idx_conversation_sentence (conversationid, sentence),
+    foreign key (userid) references users(userid) on delete cascade
 );
 
 create table if not exists estimations
 (
+    estimationid varchar(20),
+    userid       varchar(20),
+    date         datetime default current_timestamp,
+    primary key (estimationid, userid),
+    foreign key (estimationid) references conversations(conversationid) on delete cascade,
+    foreign key (userid) references users(userid) on delete cascade
+);
+
+create table if not exists estimationscores
+(
     id            bigint auto_increment primary key,
     userid        varchar(20)  not null,
-    sentence      varchar(100) not null,
+    estimationid  varchar(20)  not null,
+    sentence      varchar(255) not null,
     accuracy      double       not null,
+    prosody       double       not null,
     pronunciation double       not null,
     fluency       double       not null,
     completeness  double       not null,
-    index idx_estimation (userid)
+    index idx_scores (userid, estimationid, sentence),
+    foreign key (userid) references users(userid) on delete cascade,
+    foreign key (estimationid, sentence) references conversations(conversationid, sentence) on delete cascade
 );
-
 
 create table if not exists errorwords
 (
-    id        bigint not null auto_increment primary key,
-    userid    varchar(20)  not null,
-    sentence  varchar(100) not null,
-    errorword varchar(100) not null,
-    errortype varchar(15)  not null,
-    index idx_errors (userid, sentence)
+    id           bigint auto_increment primary key,
+    userid       varchar(20)  not null,
+    estimationid varchar(20) not null,
+    sentence     varchar(255) not null,
+    errorword    varchar(100) not null,
+    errortype    varchar(15)  not null,
+    index idx_errors (estimationid, sentence),
+    foreign key (userid, estimationid, sentence) references conversations(userid, conversationid, sentence) on delete cascade
 );
 
 

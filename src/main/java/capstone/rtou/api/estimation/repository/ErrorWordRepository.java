@@ -8,7 +8,5 @@ import java.util.List;
 
 @Repository
 public interface ErrorWordRepository extends JpaRepository<ErrorWords, Long> {
-    List<ErrorWords> findAllByUserIdAndSentence(String userId, String sentence);
-
-    void deleteAllByUserId(String userId);
+    List<ErrorWords> findAllByEstimationIdAndSentence(String estimationId, String sentence);
 }
