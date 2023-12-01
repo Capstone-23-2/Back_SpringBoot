@@ -1,11 +1,11 @@
 package capstone.rtou.api.estimation;
 
+import capstone.rtou.api.conversation.repository.ConversationCharacterRepository;
 import capstone.rtou.api.conversation.repository.ConversationsRepository;
 import capstone.rtou.api.estimation.dto.*;
 import capstone.rtou.api.estimation.repository.ErrorWordRepository;
 import capstone.rtou.api.estimation.repository.EstimationRepository;
 import capstone.rtou.api.estimation.repository.EstimationScoreRepository;
-import capstone.rtou.domain.conversation.Conversations;
 import capstone.rtou.domain.estimation.ErrorWords;
 import capstone.rtou.domain.estimation.EstimationScores;
 import capstone.rtou.domain.estimation.Estimations;
@@ -21,12 +21,14 @@ import java.util.List;
 @Slf4j
 public class EstimationService {
 
+    private final ConversationCharacterRepository conversationCharacterRepository;
     private final ConversationsRepository conversationsRepository;
     private final EstimationRepository estimationRepository;
     private final EstimationScoreRepository estimationScoreRepository;
     private final ErrorWordRepository errorWordRepository;
 
-    public EstimationService(ConversationsRepository conversationsRepository, EstimationRepository estimationRepository, EstimationScoreRepository estimationScoreRepository, ErrorWordRepository errorWordRepository) {
+    public EstimationService(ConversationCharacterRepository conversationCharacterRepository, ConversationsRepository conversationsRepository, EstimationRepository estimationRepository, EstimationScoreRepository estimationScoreRepository, ErrorWordRepository errorWordRepository) {
+        this.conversationCharacterRepository = conversationCharacterRepository;
         this.conversationsRepository = conversationsRepository;
         this.estimationRepository = estimationRepository;
         this.estimationScoreRepository = estimationScoreRepository;
@@ -47,7 +49,7 @@ public class EstimationService {
             double avgPron = estimationScoreRepository.getAveragePronByUserId(userId, estimationId);
             double avgProsody = estimationScoreRepository.getAverageProsodyByUserId(userId, estimationId);
 
-            List<Conversations> sentences = conversationsRepository.findAllById_UserIdAndId_ConversationIdOrderByDate(userId, estimationId);
+            List<String> sentences = conversationsRepository.findAllById_UserIdAndId_ConversationIdOrderByDate(userId, estimationId);
             List<EstimationScores> resultList = estimationScoreRepository.findEstimationScoresByUserIdAndEstimationId(userId, estimationId);
 
             for (int i = 0; i < sentences.size(); i += 2) {
@@ -57,7 +59,7 @@ public class EstimationService {
                     for (ErrorWords error : words) {
                         errorWords.add(new ErrorWord(error.getErrorWord(), error.getErrorType()));
                     }
-                    estimationResults.add(new Result(sentences.get(i).getId().getSentence(), result.getSentence(), errorWords));
+                    estimationResults.add(new Result(sentences.get(i), result.getSentence(), errorWords));
                 }
             }
 
@@ -78,7 +80,7 @@ public class EstimationService {
 
         for (Estimations i : estimationsList) {
             String date = i.getDate().format(DateTimeFormatter.ofPattern("yy/MM/dd(E) a hh:mm"));
-            estimations.add(new UserEstimation(i.getId().getEstimationId(), date));
+            estimations.add(new UserEstimation(i.getId().getEstimationId(), i.getCharacterName(), date));
         }
 
         return new EstimationResponse(true, "전체 평가 기록", estimations);

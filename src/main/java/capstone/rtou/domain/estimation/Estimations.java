@@ -7,16 +7,17 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
-
+@Getter
 @Entity
 @Table(name = "estimations")
 @EntityListeners(AuditingEntityListener.class)
 public class Estimations {
-    @Getter
     @EmbeddedId
     EstimationsId id;
 
-    @Getter
+    @Column(name = "charactername")
+    String characterName;
+
     @Column(name = "date")
     @CreationTimestamp
     LocalDateTime date;
@@ -25,7 +26,8 @@ public class Estimations {
 
     }
 
-    public Estimations(EstimationsId id) {
+    public Estimations(EstimationsId id, String characterName) {
         this.id = id;
+        this.characterName = characterName;
     }
 }

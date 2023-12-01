@@ -1,7 +1,5 @@
 package capstone.rtou.api.conversation;
 
-import capstone.rtou.ElapsedTime;
-import capstone.rtou.api.auth.AuthRepository;
 import capstone.rtou.api.conversation.dto.ConversationRequestDto;
 import capstone.rtou.api.conversation.dto.ConversationResponse;
 import capstone.rtou.api.conversation.dto.ModelRequest;
@@ -22,7 +20,6 @@ import capstone.rtou.domain.estimation.EstimationScores;
 import capstone.rtou.domain.estimation.Estimations;
 import capstone.rtou.domain.estimation.EstimationsId;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.speech.v1.*;
@@ -44,7 +41,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 @Service
@@ -81,7 +77,6 @@ public class ConversationService {
     @Transactional
     public ConversationResponse startConversation(String userId, String characterName) throws IOException, ExecutionException, InterruptedException {
         String hello = "Hi. I'm " + characterName + ". Nice to meet you!! What's your name?";
-//        String hello = "Hi! I'm " + characterName + "!!";
         String conversationId = randomString();
 
         CharacterInfo characterInfo = characterInfoRepository.findByName(characterName);
@@ -92,6 +87,7 @@ public class ConversationService {
             try {
                 if (audioContent != null) {
                     String audioLink = storageService.uploadModelAudioAndSend(userId, audioContent);
+                    conversationsRepository.save(new Conversations(new ConversationsId(conversationId, userId, hello)));
                     return new ConversationResponse(true, "음성 생성 완료", conversationId, audioLink);
                 } else {
                     return new ConversationResponse(false, "음성이 생성X");
@@ -147,7 +143,8 @@ public class ConversationService {
     public ConversationResponse endConversation(ConversationRequestDto conversationRequest) {
         EstimationsId id = new EstimationsId(conversationRequest.getConversationId(), conversationRequest.getUserId());
 
-        estimationRepository.save(new Estimations(id));
+        String character = conversationCharacterRepository.findByUserId(conversationRequest.getUserId());
+        estimationRepository.save(new Estimations(id, character));
 
         return new ConversationResponse(true, "대화 종료");
     }
@@ -168,11 +165,22 @@ public class ConversationService {
         CharacterInfo characterInfo = characterInfoRepository.getReferenceById(character);
         String sentence = SpeechToText(audioFile); // 사용자 음성 파일 텍스트로 변환
 
-        CompletableFuture.runAsync(() -> {
+        pronunciationAssessment(userId, conversationId, audioFile).thenAccept(result -> {
             try {
-                conversationsRepository.save(new Conversations(new ConversationsId(conversationId, userId, sentence)));
-                pronunciationAssessment(userId, conversationId, audioFile);
-                } catch (ExecutionException | InterruptedException | TimeoutException | IOException e) {
+                ObjectMapper objectMapper = new ObjectMapper();
+                JsonNode rootNode = objectMapper.readTree(result);
+                String displayText = rootNode.path("DisplayText").asText();
+                JsonNode wordsNode = rootNode.path("NBest").get(0).path("Words");
+                for (JsonNode wordNode : wordsNode) {
+                    JsonNode pronunciationAssessment = wordNode.path("PronunciationAssessment");
+                    String errorWord = pronunciationAssessment.path("Word").asText();
+                    String errorType = pronunciationAssessment.path("ErrorType").asText();
+                    if (errorType == "None") {
+                        ErrorWords errorWords = new ErrorWords(userId, displayText, errorWord, errorType);
+                        errorWordRepository.save(errorWords);
+                    }
+                }
+            } catch (JsonProcessingException e) {
                 throw new RuntimeException(e);
             }
         });
@@ -214,7 +222,7 @@ public class ConversationService {
             RecognitionConfig recognitionConfig = RecognitionConfig.newBuilder()
                     .setEncoding(RecognitionConfig.AudioEncoding.LINEAR16)
                     .setLanguageCode("en-US")
-                    .setSampleRateHertz(24000)
+                    .setSampleRateHertz(16000)
                     .build();
 
             RecognitionAudio recognitionAudio = RecognitionAudio.newBuilder()
@@ -248,7 +256,6 @@ public class ConversationService {
      * @return
      * @throws IOException
      */
-    @ElapsedTime
     private ByteString TextToSpeech(String sentence, String voiceName, double pitch, String langCode) throws IOException {
         long start = System.currentTimeMillis();
         if (sentence.isEmpty()) {
@@ -301,7 +308,7 @@ public class ConversationService {
      * @throws IOException
      */
     @Async(value = "AsyncExecutor")
-    public void pronunciationAssessment(String userId, String conversationId, MultipartFile audioFile) throws ExecutionException, InterruptedException, TimeoutException, IOException {
+    public CompletableFuture<String> pronunciationAssessment(String userId, String conversationId, MultipartFile audioFile) throws ExecutionException, InterruptedException, TimeoutException, IOException {
         log.info("Async Pronunciation Start");
 
         SpeechConfig speechConfig = SpeechConfig.fromSubscription(key, "eastus");
@@ -313,93 +320,45 @@ public class ConversationService {
                 .AudioConfig audioConfig = com.microsoft.cognitiveservices.speech.audio
                 .AudioConfig.fromStreamInput(stream);
 
-        // Creates a speech recognizer using file as audio input
+        PronunciationAssessmentConfig pronunciationConfig = new PronunciationAssessmentConfig("",
+                PronunciationAssessmentGradingSystem.HundredMark, PronunciationAssessmentGranularity.Word, true);
+        pronunciationConfig.enableProsodyAssessment();
+
+        // 발음 평가 결과 가져오기
         SpeechRecognizer speechRecognizer = new SpeechRecognizer(speechConfig, lang, audioConfig);
 
-        log.info("Async Pronunciation End");
+        pronunciationConfig.applyTo(speechRecognizer);
+        Future<com.microsoft.cognitiveservices.speech
+                .SpeechRecognitionResult> future = speechRecognizer.recognizeOnceAsync();
+        com.microsoft.cognitiveservices.speech
+                .SpeechRecognitionResult speechRecognitionResult = future.get(30, TimeUnit.SECONDS);
 
-        // 문법과 어휘 검사까지 가능한 코드
-        Connection connect = Connection.fromRecognizer(speechRecognizer);
-        connect.setMessageProperty("speech.context", "phraseDetection", "{\"enrichment\":{\"pronunciationAssessment\":{\"referenceText\":\"\",\"gradingSystem\":\"HundredMark\",\"granularity\":\"Word\",\"dimension\":\"Comprehensive\",\"enableMiscue\":\"False\",\"EnableProsodyAssessment\":\"True\"},\"contentAssessment\":{\"topic\":\"greeting\"}}}");
-        connect.setMessageProperty("speech.context", "phraseOutput", "{\"format\":\"Detailed\",\"detailed\":{\"options\":[\"WordTimings\",\"PronunciationAssessment\",\"ContentAssessment\",\"SNR\"]}}");
+        PronunciationAssessmentResult assessmentResult = PronunciationAssessmentResult.fromResult(speechRecognitionResult);
 
-//         Semaphore used to signal the call to stop continuous recognition (following either a session ended or a cancelled event)
-        final Semaphore doneSemaphore = new Semaphore(0);
+        // JSON string으로 발음 평가 결과 가져오기
+        String pronunciationAssessmentResultJson = speechRecognitionResult.getProperties()
+                .getProperty(PropertyId.SpeechServiceResponse_JsonResult);
 
-//         Subscribes to events.
-        AtomicReference<String> jString = new AtomicReference<>();
-        speechRecognizer.recognized.addEventListener((s, e) -> {
-            if (e.getResult().getReason() == ResultReason.RecognizedSpeech) {
-                log.info("RECOGNIZING ={}", e.getResult().getText());
-                jString.set(e.getResult().getProperties().getProperty(PropertyId.SpeechServiceResponse_JsonResult));
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode rootNode = objectMapper.readTree(pronunciationAssessmentResultJson);
+        String displayText = rootNode.path("DisplayText").asText();
 
-                try{
-                    ObjectMapper objectMapper = new ObjectMapper();
-                    JsonNode rootNode = objectMapper.readTree(jString.get());
-                    String displayText = rootNode.path("DisplayText").asText();
-                    JsonNode pronunciation = rootNode.path("NBest").get(0).path("PronunciationAssessment");
-                    double accuracy = pronunciation.path("AccuracyScore").asDouble();
-                    double fluency = pronunciation.path("FluencyScore").asDouble();
-                    double prosody = pronunciation.path("ProsodyScore").asDouble();
-                    double completeness = pronunciation.path("CompletenessScore").asDouble();
-                    double pron = pronunciation.path("PronScore").asDouble();
+        conversationsRepository.save(new Conversations(new ConversationsId(conversationId, userId, displayText)));
 
-                    EstimationScores result = new EstimationScores(
-                            userId, conversationId, displayText,
-                            accuracy, prosody, pron, fluency, completeness);
-                    estimationScoreRepository.save(result);
+        EstimationScores estimationScores = new EstimationScores(
+                userId, conversationId, displayText,
+                assessmentResult.getAccuracyScore(), assessmentResult.getProsodyScore(), assessmentResult.getPronunciationScore(), assessmentResult.getCompletenessScore(), assessmentResult.getPronunciationScore());
 
-                    JsonNode wordsNode = rootNode.path("NBest").get(0).path("Words");
-                    for (JsonNode wordNode : wordsNode) {
-                        JsonNode pronunciationAssessment = wordNode.path("PronunciationAssessment");
-                        String errorWord = wordsNode.path("Word").asText();
-                        String errorType = pronunciationAssessment.path("ErrorType").asText();
-                        if (errorType.equals("Mispronunciation")) {
-                            ErrorWords errorWords = new ErrorWords(conversationId, displayText, errorWord, errorType);
-                            errorWordRepository.save(errorWords);
-                        }
-                    }
+        estimationScoreRepository.save(estimationScores);
 
-                } catch (JsonProcessingException ex) {
-                    throw new RuntimeException(ex);
-                }
-            } else if (e.getResult().getReason() == ResultReason.NoMatch) {
-                log.info("NOMATCH: Speech could not be recognized.");
-            }
-        });
-
-        speechRecognizer.canceled.addEventListener((s, e) -> {
-            log.info("CANCELED: Reason = " + e.getReason());
-            if (e.getReason() == CancellationReason.Error) {
-                log.info("CANCELED: ErrorCode = " + e.getErrorCode());
-                log.info("CANCELED: ErrorDetails = " + e.getErrorDetails());
-                log.info("CANCELED: Did you update the subscription info?");
-            }
-            doneSemaphore.release();
-        });
-
-        speechRecognizer.sessionStarted.addEventListener((s, e) -> {
-            log.info("Session started event.");
-        });
-
-        speechRecognizer.sessionStopped.addEventListener((s, e) -> {
-            log.info("Session stopped event.");
-            doneSemaphore.release();
-        });
-
-//         Starts continuous recognition and wait for processing to end
-        speechRecognizer.startContinuousRecognitionAsync();
-        doneSemaphore.tryAcquire(30, TimeUnit.SECONDS);
-
-//         Stop continuous recognition
-        speechRecognizer.stopContinuousRecognitionAsync().get();
-
-        // These objects must be closed in order to dispose underlying native resources
         speechRecognizer.close();
         speechConfig.close();
-        audioConfig.close();
+        pronunciationConfig.close();
+        speechRecognitionResult.close();
 
         log.info("Async Pronunciation End");
+
+        return CompletableFuture.completedFuture(pronunciationAssessmentResultJson);
     }
 
     @Async(value = "AsyncExecutor")

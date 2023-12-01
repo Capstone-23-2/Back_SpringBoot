@@ -8,10 +8,14 @@ import java.sql.Timestamp;
 @Getter
 public class UserEstimation implements Serializable {
     String estimationId;
+
+    String characterName;
+
     String date;
 
-    public UserEstimation(String estimationId, String date) {
+    public UserEstimation(String estimationId, String characterName, String date) {
         this.estimationId = estimationId;
+        this.characterName = characterName;
         this.date = date;
     }
 }

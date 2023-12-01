@@ -16,10 +16,7 @@ public class LoggingAspect {
     @Pointcut("execution(* capstone.rtou.api..*(..))")
     public void cut() {}
 
-    @Pointcut("@annotation(capstone.rtou.ElapsedTime)")
-    public void elapsedTime() {}
-
-    @Around("cut()||elapsedTime()")
+    @Around("cut()")
     public Object logAround(ProceedingJoinPoint joinPoint) throws Throwable {
 
         long start = System.currentTimeMillis();

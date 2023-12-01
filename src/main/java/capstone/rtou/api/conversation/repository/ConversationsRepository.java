@@ -12,6 +12,6 @@ import java.util.List;
 
 @Repository
 public interface ConversationsRepository extends JpaRepository<Conversations, String> {
-    List<Conversations> findAllById_UserIdAndId_ConversationIdOrderByDate(String userId, String conversationId);
-
+    @Query("select c.id.sentence from Conversations c where c.id.userId = :userId and c.id.conversationId = :conversationId order by c.date desc ")
+    List<String> findAllById_UserIdAndId_ConversationIdOrderByDate(@Param("userId") String userId, @Param("conversationId") String conversationId);
 }
