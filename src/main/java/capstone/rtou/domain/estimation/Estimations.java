@@ -5,6 +5,7 @@ import lombok.Getter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 @Getter
@@ -13,14 +14,14 @@ import java.time.LocalDateTime;
 @EntityListeners(AuditingEntityListener.class)
 public class Estimations {
     @EmbeddedId
-    EstimationsId id;
+    private EstimationsId id;
 
     @Column(name = "charactername")
-    String characterName;
+    private String characterName;
 
     @Column(name = "date")
     @CreationTimestamp
-    LocalDateTime date;
+    private LocalDateTime date;
 
     public Estimations() {
 

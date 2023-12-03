@@ -19,11 +19,11 @@ public class Conversations {
 
     @Getter
     @EmbeddedId
-    ConversationsId id;
+    private ConversationsId id;
 
-    @Column(name = "date")
+    @Column(name = "date", updatable = false)
     @CreationTimestamp
-    LocalDateTime date;
+    private LocalDateTime date;
 
     public Conversations(ConversationsId id) {
         this.id = id;
