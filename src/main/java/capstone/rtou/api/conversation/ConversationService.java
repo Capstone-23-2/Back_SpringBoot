@@ -30,6 +30,7 @@ import com.microsoft.cognitiveservices.speech.*;
 import com.microsoft.cognitiveservices.speech.audio.AudioInputStream;
 import com.microsoft.cognitiveservices.speech.audio.PullAudioInputStream;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -53,7 +54,8 @@ public class ConversationService {
     private final ErrorWordRepository errorWordRepository;
     private final RestTemplate restTemplate;
     private final StorageService storageService;
-    private final String key = "673540caf6af45cb94482557d5d1a726";
+    @Value("${azure.key}")
+    private static String key;
 
     public ConversationService(ConversationsRepository conversationsRepository, CharacterInfoRepository characterInfoRepository, ConversationCharacterRepository conversationCharacterRepository, EstimationRepository estimationRepository, EstimationScoreRepository estimationScoreRepository, ErrorWordRepository errorWordRepository, RestTemplateBuilder restTemplateBuilder , StorageService storageService) {
         this.conversationsRepository = conversationsRepository;

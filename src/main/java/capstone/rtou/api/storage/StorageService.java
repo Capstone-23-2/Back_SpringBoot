@@ -3,6 +3,7 @@ package capstone.rtou.api.storage;
 import com.google.cloud.storage.*;
 import com.google.protobuf.ByteString;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
@@ -15,7 +16,8 @@ import java.util.Random;
 @Service
 public class StorageService {
 
-    private final String projectId = "civic-surge-399806";
+    @Value("${google.projectId}")
+    private static String projectId;
     private final String bucketName = "rtou";
     private final Storage storage = StorageOptions.newBuilder().setProjectId(projectId).build().getService();
 
