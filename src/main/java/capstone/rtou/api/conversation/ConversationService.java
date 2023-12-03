@@ -19,7 +19,6 @@ import capstone.rtou.domain.estimation.ErrorWords;
 import capstone.rtou.domain.estimation.EstimationScores;
 import capstone.rtou.domain.estimation.Estimations;
 import capstone.rtou.domain.estimation.EstimationsId;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.speech.v1.*;
@@ -30,7 +29,6 @@ import com.microsoft.cognitiveservices.speech.*;
 import com.microsoft.cognitiveservices.speech.audio.AudioInputStream;
 import com.microsoft.cognitiveservices.speech.audio.PullAudioInputStream;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
@@ -42,6 +40,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
 @Service
@@ -54,8 +53,7 @@ public class ConversationService {
     private final ErrorWordRepository errorWordRepository;
     private final RestTemplate restTemplate;
     private final StorageService storageService;
-    @Value("${azure.key}")
-    private static String key;
+    private final String key = "673540caf6af45cb94482557d5d1a726";
 
     public ConversationService(ConversationsRepository conversationsRepository, CharacterInfoRepository characterInfoRepository, ConversationCharacterRepository conversationCharacterRepository, EstimationRepository estimationRepository, EstimationScoreRepository estimationScoreRepository, ErrorWordRepository errorWordRepository, RestTemplateBuilder restTemplateBuilder , StorageService storageService) {
         this.conversationsRepository = conversationsRepository;
@@ -128,17 +126,40 @@ public class ConversationService {
      */
     @Transactional
     public ConversationResponse getNextAudio(String userId, String conversationId, MultipartFile audioFile) throws IOException, ExecutionException, InterruptedException, TimeoutException {
+        String character = conversationCharacterRepository.findByUserId(userId);
+        CharacterInfo characterInfo = characterInfoRepository.getReferenceById(character);
+        String sentence = SpeechToText(audioFile); // 사용자 음성 파일 텍스트로 변환
+        AtomicReference<String> url = new AtomicReference<>();
 
-        // 위에서 얻은 사용자의 문장으로부터 모델에게서 다음 문장 가져오기
-        CompletableFuture<ConversationResponse> getNext = getFromModel(userId, conversationId, audioFile).thenApply(result -> {
-            if (result != null) {
-                return new ConversationResponse(true, "사용자 음성 저장 및 음성 생성 완료", result);
-            } else {
-                return new ConversationResponse(false, "음성 생성 X");
+        CompletableFuture.runAsync(() -> {
+            try {
+                pronunciationAssessment(userId, conversationId, sentence, audioFile);
+            } catch (ExecutionException | InterruptedException | TimeoutException | IOException e) {
+                throw new RuntimeException(e);
             }
         });
 
-        return getNext.get();
+        CompletableFuture<String> mlSentence = getSentence(character, sentence).thenApply(result -> {
+            try {
+                ByteString speech = TextToSpeech(result, characterInfo.getVoiceName(), characterInfo.getPitch(), characterInfo.getLangCode());
+                if (speech != null) {
+                    url.set(storageService.uploadModelAudioAndSend(userId, speech));
+                    return result;
+                } else {
+                    return null;
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }).orTimeout(1, TimeUnit.MILLISECONDS);
+
+        if (mlSentence.get() != null) {
+
+            conversationsRepository.save(new Conversations(new ConversationsId(conversationId, userId, mlSentence.get())));
+            return new ConversationResponse(true, "사용자 음성 저장 및 음성 생성 완료", url.get());
+        } else {
+            return new ConversationResponse(false, "음성 생성 X");
+        }
     }
 
     @Transactional
@@ -149,60 +170,6 @@ public class ConversationService {
         estimationRepository.save(new Estimations(id, character));
 
         return new ConversationResponse(true, "대화 종료");
-    }
-
-    /**
-     * 모델로부터 다음 문장 가져오기
-     *
-     * @param userId
-     * @param conversationId
-     * @param audioFile
-     * @return
-     * @throws IOException
-     */
-    @Async(value = "AsyncExecutor")
-    public CompletableFuture<String> getFromModel(String userId, String conversationId, MultipartFile audioFile) throws IOException, ExecutionException, InterruptedException, TimeoutException {
-
-        String character = conversationCharacterRepository.findByUserId(userId);
-        CharacterInfo characterInfo = characterInfoRepository.getReferenceById(character);
-        String sentence = SpeechToText(audioFile); // 사용자 음성 파일 텍스트로 변환
-
-        pronunciationAssessment(userId, conversationId, audioFile).thenAccept(result -> {
-            try {
-                ObjectMapper objectMapper = new ObjectMapper();
-                JsonNode rootNode = objectMapper.readTree(result);
-                String displayText = rootNode.path("DisplayText").asText();
-                JsonNode wordsNode = rootNode.path("NBest").get(0).path("Words");
-                for (JsonNode wordNode : wordsNode) {
-                    JsonNode pronunciationAssessment = wordNode.path("PronunciationAssessment");
-                    String errorWord = pronunciationAssessment.path("Word").asText();
-                    String errorType = pronunciationAssessment.path("ErrorType").asText();
-                    if (errorType == "None") {
-                        ErrorWords errorWords = new ErrorWords(userId, displayText, errorWord, errorType);
-                        errorWordRepository.save(errorWords);
-                    }
-                }
-            } catch (JsonProcessingException e) {
-                throw new RuntimeException(e);
-            }
-        });
-
-        CompletableFuture<String> mlSentence = getSentence(character, sentence).thenApply(result -> {
-            try {
-                ByteString speech = TextToSpeech(result, characterInfo.getVoiceName(), characterInfo.getPitch(), characterInfo.getLangCode());
-                if (speech != null) {
-                    String url = storageService.uploadModelAudioAndSend(userId, speech);
-                    conversationsRepository.save(new Conversations(new ConversationsId(conversationId, userId, result)));
-                    return url;
-                } else {
-                    return null;
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
-
-        return mlSentence;
     }
 
     /**
@@ -224,7 +191,7 @@ public class ConversationService {
             RecognitionConfig recognitionConfig = RecognitionConfig.newBuilder()
                     .setEncoding(RecognitionConfig.AudioEncoding.LINEAR16)
                     .setLanguageCode("en-US")
-                    .setSampleRateHertz(24000)
+                    .setSampleRateHertz(16000)
                     .build();
 
             RecognitionAudio recognitionAudio = RecognitionAudio.newBuilder()
@@ -303,6 +270,7 @@ public class ConversationService {
      *
      * @param userId
      * @param conversationId
+     * @param reference
      * @param audioFile
      * @throws ExecutionException
      * @throws InterruptedException
@@ -310,7 +278,7 @@ public class ConversationService {
      * @throws IOException
      */
     @Async(value = "AsyncExecutor")
-    public CompletableFuture<String> pronunciationAssessment(String userId, String conversationId, MultipartFile audioFile) throws ExecutionException, InterruptedException, TimeoutException, IOException {
+    public void pronunciationAssessment(String userId, String conversationId, String reference, MultipartFile audioFile) throws ExecutionException, InterruptedException, TimeoutException, IOException {
         log.info("Async Pronunciation Start");
 
         SpeechConfig speechConfig = SpeechConfig.fromSubscription(key, "eastus");
@@ -322,7 +290,7 @@ public class ConversationService {
                 .AudioConfig audioConfig = com.microsoft.cognitiveservices.speech.audio
                 .AudioConfig.fromStreamInput(stream);
 
-        PronunciationAssessmentConfig pronunciationConfig = new PronunciationAssessmentConfig("",
+        PronunciationAssessmentConfig pronunciationConfig = new PronunciationAssessmentConfig(reference,
                 PronunciationAssessmentGradingSystem.HundredMark, PronunciationAssessmentGranularity.Word, true);
         pronunciationConfig.enableProsodyAssessment();
 
@@ -335,8 +303,6 @@ public class ConversationService {
         com.microsoft.cognitiveservices.speech
                 .SpeechRecognitionResult speechRecognitionResult = future.get(30, TimeUnit.SECONDS);
 
-        PronunciationAssessmentResult assessmentResult = PronunciationAssessmentResult.fromResult(speechRecognitionResult);
-
         // JSON string으로 발음 평가 결과 가져오기
         String pronunciationAssessmentResultJson = speechRecognitionResult.getProperties()
                 .getProperty(PropertyId.SpeechServiceResponse_JsonResult);
@@ -344,14 +310,29 @@ public class ConversationService {
         ObjectMapper objectMapper = new ObjectMapper();
         JsonNode rootNode = objectMapper.readTree(pronunciationAssessmentResultJson);
         String displayText = rootNode.path("DisplayText").asText();
+        JsonNode pronunciation = rootNode.path("NBest").get(0).path("PronunciationAssessment");
+        double accuracy = pronunciation.path("AccuracyScore").asDouble();
+        double prosody = pronunciation.path("ProsodyScore").asDouble();
+        double fluency = pronunciation.path("FluencyScore").asDouble();
+        double completeness = pronunciation.path("CompletenessScore").asDouble();
+        double pron = pronunciation.path("PronScore").asDouble();
 
         conversationsRepository.save(new Conversations(new ConversationsId(conversationId, userId, displayText)));
 
         EstimationScores estimationScores = new EstimationScores(
-                userId, conversationId, displayText,
-                assessmentResult.getAccuracyScore(), assessmentResult.getProsodyScore(), assessmentResult.getPronunciationScore(), assessmentResult.getCompletenessScore(), assessmentResult.getPronunciationScore());
+                userId, conversationId, displayText, accuracy, prosody, pron, fluency, completeness);
 
         estimationScoreRepository.save(estimationScores);
+        JsonNode wordsNode = rootNode.path("NBest").get(0).path("Words");
+        for (JsonNode wordNode : wordsNode) {
+            JsonNode pronunciationAssessment = wordNode.path("PronunciationAssessment");
+            String errorWord = pronunciationAssessment.path("Word").asText();
+            String errorType = pronunciationAssessment.path("ErrorType").asText();
+            if (errorType == "None") {
+                ErrorWords errorWords = new ErrorWords(userId, displayText, errorWord, errorType);
+                errorWordRepository.save(errorWords);
+            }
+        }
 
         speechRecognizer.close();
         speechConfig.close();
@@ -359,13 +340,12 @@ public class ConversationService {
         speechRecognitionResult.close();
 
         log.info("Async Pronunciation End");
-
-        return CompletableFuture.completedFuture(pronunciationAssessmentResultJson);
     }
 
     @Async(value = "AsyncExecutor")
     public CompletableFuture<String> getSentence(String characterName, String sentence) {
-        String apiUrl = "http://localhost:8000/conversation"; // API 엔드포인트 URL
+//        String apiUrl = "http://localhost:8000/conversation"; // API 엔드포인트 URL
+        String apiUrl = "http://13.124.7.35:8000/conversation";
 
         // API 호출
         ModelResponse modelResponse = restTemplate.postForObject(apiUrl, new ModelRequest(1, sentence, characterName), ModelResponse.class);
