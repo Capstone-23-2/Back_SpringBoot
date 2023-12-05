@@ -1,5 +1,6 @@
 package capstone.rtou.api.conversation;
 
+import capstone.rtou.api.auth.AuthRepository;
 import capstone.rtou.api.conversation.dto.ConversationRequestDto;
 import capstone.rtou.api.conversation.dto.ConversationResponse;
 import capstone.rtou.api.conversation.dto.ModelRequest;
@@ -45,6 +46,8 @@ import java.util.concurrent.atomic.AtomicReference;
 @Slf4j
 @Service
 public class ConversationService {
+
+    private final AuthRepository authRepository;
     private final ConversationsRepository conversationsRepository;
     private final CharacterInfoRepository characterInfoRepository;
     private final ConversationCharacterRepository conversationCharacterRepository;
@@ -55,7 +58,8 @@ public class ConversationService {
     private final StorageService storageService;
     private final String key = "673540caf6af45cb94482557d5d1a726";
 
-    public ConversationService(ConversationsRepository conversationsRepository, CharacterInfoRepository characterInfoRepository, ConversationCharacterRepository conversationCharacterRepository, EstimationRepository estimationRepository, EstimationScoreRepository estimationScoreRepository, ErrorWordRepository errorWordRepository, RestTemplateBuilder restTemplateBuilder , StorageService storageService) {
+    public ConversationService(AuthRepository authRepository, ConversationsRepository conversationsRepository, CharacterInfoRepository characterInfoRepository, ConversationCharacterRepository conversationCharacterRepository, EstimationRepository estimationRepository, EstimationScoreRepository estimationScoreRepository, ErrorWordRepository errorWordRepository, RestTemplateBuilder restTemplateBuilder , StorageService storageService) {
+        this.authRepository = authRepository;
         this.conversationsRepository = conversationsRepository;
         this.characterInfoRepository = characterInfoRepository;
         this.conversationCharacterRepository = conversationCharacterRepository;
@@ -79,7 +83,15 @@ public class ConversationService {
         String hello = "Hi. I'm " + characterName + ". Nice to meet you!! What's your name?";
         String conversationId = randomString();
 
+        if (!authRepository.existsById(userId)) {
+            return new ConversationResponse(false, "등록되지 않은 사용자입니다.");
+        }
+
         CharacterInfo characterInfo = characterInfoRepository.findByName(characterName);
+
+        if (characterInfo == null) {
+            return new ConversationResponse(false, "해당하는 캐릭터 정보가 없습니다.");
+        }
 
         ByteString audioContent = TextToSpeech(hello, characterInfo.getVoiceName(), characterInfo.getPitch(), characterInfo.getLangCode());
 
